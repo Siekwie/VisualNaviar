@@ -24,7 +24,7 @@ export default {
     ui.slider({ label: 'Feedback exponent κ', min: 0.25, max: 2, step: 0.05, value: kappa, onChange: (v) => { kappa = v; } });
     ui.toggle({ label: 'Play', value: true, onChange: (v) => { playing = v; } });
     ui.button({ label: 'Restart', onClick: () => { t = 0; } });
-    ui.note('<b>Formula-derived.</b> Exact solution of the vorticity equation $\\partial_t\\omega+u\\cdot\\nabla\\omega=\\gamma\\,\\omega+\\nu\\Delta\\omega$ for a Gaussian vortex in the imposed strain $u=(-\\tfrac{\\gamma}{2}x,-\\tfrac{\\gamma}{2}y,\\gamma z)$: $\\tfrac{d}{dt}\\delta^2=4\\nu-\\gamma\\delta^2$ and $\\omega_{\\max}=\\Gamma/(\\pi\\delta^2)$. The strain is prescribed, not produced by the vortex: this is a model of the stretching mechanism, not a solution of the full equations.');
+    ui.note('<b>Formula-derived.</b> Exact solution of the vorticity equation $\\partial_t\\omega+u\\cdot\\nabla\\omega=\\gamma\\,\\omega+\\nu\\Delta\\omega$ for a Gaussian vortex in the imposed strain $u=(-\\tfrac{\\gamma}{2}x,-\\tfrac{\\gamma}{2}y,\\gamma z)$: $\\tfrac{d}{dt}\\delta^2=4\\nu-\\gamma\\delta^2$ and $\\omega_{\\max}=\\Gamma/(\\pi\\delta^2)$. The strain is prescribed, not produced by the vortex, and it extends to infinity with infinite energy: an exact Navier–Stokes solution only in that idealized sense, and a model of the stretching mechanism, not the paper’s flow.');
 
     const state = (tt) => {
       if (!growing) {

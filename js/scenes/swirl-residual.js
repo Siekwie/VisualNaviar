@@ -25,7 +25,7 @@ export default {
     ui.slider({ label: 'Speed exponent α', min: 0.1, max: 1.5, step: 0.05, value: a, onChange: (v) => { a = v; } });
     ui.slider({ label: 'Width exponent β', min: 0.1, max: 1.5, step: 0.05, value: b, onChange: (v) => { b = v; } });
     ui.slider({ label: 'Viscosity ν', min: 0, max: 0.3, step: 0.005, value: nu, onChange: (v) => { nu = v; } });
-    ui.toggle({ label: 'Use similarity coordinate ρ = r / w(t)', value: false, hint: 'In the rescaled coordinate the velocity profile stops moving; the required force does not stop growing.', onChange: (v) => { similarity = v; } });
+    ui.toggle({ label: 'Use similarity coordinate ρ = r / w(t)', value: false, hint: 'In the rescaled coordinate the shape of the velocity profile stops changing (its amplitude still grows); the required force grows faster still.', onChange: (v) => { similarity = v; } });
     ui.note('<b>Formula-derived toy model.</b> A planar swirl $v_\\theta = U(t)\\,F(r/w(t))$ with $F(\\rho)=\\rho\\,e^{(1-\\rho^2)/2}$ is divergence-free and the pressure balances the centripetal term exactly, so the force the equation demands is $f_\\theta=\\partial_t v_\\theta-\\nu\\,(\\partial_{rr}v_\\theta+\\partial_r v_\\theta/r-v_\\theta/r^2)$. In this toy there is no mechanism for the flow to amplify itself: the force must supply all of the growth.');
 
     const draw = () => {
