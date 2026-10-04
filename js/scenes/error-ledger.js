@@ -58,7 +58,7 @@ export default {
         series: [
           { pts: pts((j) => 1.2 + j / 10), color: th.warn, label: 'mean class C_J = 6/5 + J/10', width: 2.5 },
           { pts: pts((j) => 0.7 + j / 10), color: th.accent, label: 'wave class B_J = 7/10 + J/10', width: 2.5 },
-          { pts: pts((j) => 0.4), color: th.ok, dash: [5, 3], label: 'gain per wave step: 2/5 (particular), 2/5 − κ (signed)' },
+          { pts: pts((j) => 0.4), color: th.ok, dash: [5, 3], label: 'gain per wave step: 2/5 or 2/5 − κ' },
           { pts: pts((j) => h * j / 10), color: th.numeric, dash: [2, 3], label: `physical gain h·J/10 (h = ${h.toFixed(3)})`, width: 2 },
         ],
         marker: J,
@@ -92,13 +92,13 @@ export default {
       const yD = bot + 6;
       ctx.fillStyle = th.faint; ctx.font = `10.5px ${th.mono}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText('Q_n', rx - 6, yD + 8);
       for (let n = 0; n <= 20; n++) { const lq = n * Math.log10(2); if (lq > 6) break; const on = n === nLabel; ctx.fillStyle = on ? th.bad : th.lineStrong; ctx.fillRect(LQ(lq) - (on ? 1.5 : 0.5), yD, on ? 3 : 1, 16); }
-      labelPill(ctx, `label n = ${nLabel}: q ≤ 2^−${nLabel} < 2q`, LQ(Math.min(5.3, nLabel * Math.log10(2))) + 6, yD + 8, { color: th.bad, size: 9.5 });
+      { const lx = nLabel * Math.log10(2); const right = lx > 3; labelPill(ctx, `label n = ${nLabel}: q ≤ 2^−${nLabel} < 2q`, LQ(Math.min(6, lx)) + (right ? -6 : 6), yD + 8, { color: th.bad, size: 9.5, align: right ? 'right' : 'left' }); }
       // marker
       ctx.strokeStyle = th.bad; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(LQ(logQ), top - 4); ctx.lineTo(LQ(logQ), bot + 24); ctx.stroke(); ctx.setLineDash([]);
       labelPill(ctx, `q = ${q.toExponential(2)}: ${active} stage${active === 1 ? '' : 's'} on`, LQ(logQ) + (logQ > 3.6 ? -6 : 6), top - 12, { color: th.bad, align: logQ > 3.6 ? 'right' : 'left', size: 10 });
       ctx.fillStyle = th.muted; ctx.font = `10.5px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-      ctx.fillText(`a_j = ${g}^j is illustrative; the Lean only asks 2a_j ≤ a_{j+1}, a_j → ∞.`, rx - 30, bot + 52);
-      ctx.fillText('Each cutoff is ≡ 1 for q ≤ 1/(2a_j): near q = 0 every cutoff is one.', rx - 30, bot + 66);
+      ctx.fillText(`a_j = ${g}^j illustrative (Lean: 2a_j ≤ a_{j+1}, a_j → ∞)`, rx - 30, bot + 52);
+      ctx.fillText('χ ≡ 1 for q ≤ 1/(2a_j): near q = 0 all cutoffs are one', rx - 30, bot + 66);
     };
     ui.loop(() => draw());
     c.onResize(() => draw());

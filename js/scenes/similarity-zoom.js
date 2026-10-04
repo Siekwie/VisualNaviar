@@ -77,7 +77,7 @@ export default {
       // η = ±1/2 lines: z = ±η q^D with q = τ/(1 − η²)
       const eta = 0.5, qEta = tau / (1 - eta * eta), zEta = eta * Math.pow(qEta, D);
       ctx.strokeStyle = th.faint; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(px.x, ZY(zEta)); ctx.lineTo(px.x + px.w, ZY(zEta)); ctx.moveTo(px.x, ZY(-zEta)); ctx.lineTo(px.x + px.w, ZY(-zEta)); ctx.stroke(); ctx.setLineDash([]);
-      labelPill(ctx, 'η = ±½', px.x + px.w - 8, ZY(zEta) - 9, { color: th.muted, align: 'right', size: 10 });
+      labelPill(ctx, 'η = ±½', px.x + px.w - 8, ZY(-zEta) + 9, { color: th.muted, align: 'right', size: 10 });
       // axis of symmetry and the axis velocity arrow at the origin (formula-derived direction e₂, magnitude j(1−t)^−A)
       ctx.strokeStyle = th.lineStrong; ctx.beginPath(); ctx.moveTo(RX(0) + 0.5, px.y); ctx.lineTo(RX(0) + 0.5, px.y + px.h); ctx.stroke();
       const ah = Math.min(px.h * 0.42, 18 + 14 * Math.log10(Math.max(1, U)));
@@ -121,9 +121,9 @@ export default {
       ctx.strokeStyle = th.numeric; ctx.lineWidth = 1; ctx.globalAlpha = 0.5; ctx.beginPath();
       for (let i = 0; i < trail.length; i++) { const [X, e] = trail[i]; if (i === 0) ctx.moveTo(SX(X), SY(e)); else ctx.lineTo(SX(X), SY(e)); } ctx.stroke(); ctx.globalAlpha = 1;
       ctx.fillStyle = th.numeric; ctx.beginPath(); ctx.arc(Math.min(SX(XP), sx.x + sx.w), SY(etaP), 4, 0, Math.PI * 2); ctx.fill();
-      labelPill(ctx, `P: X = ${fmt.num(XP)}  η = ${etaP.toFixed(3)}`, Math.min(SX(XP), sx.x + sx.w - 130) + 6, SY(etaP) + (etaP < -0.6 ? -12 : 12), { color: th.numeric, size: 10 });
+      labelPill(ctx, `P: X = ${fmt.num(XP)}  η = ${etaP.toFixed(3)}`, Math.min(SX(XP), sx.x + sx.w - 150) + 6, SY(etaP) + (etaP < -0.6 ? -12 : 12), { color: th.numeric, size: 10 });
       ctx.strokeStyle = th.lineStrong; ctx.strokeRect(sx.x + 0.5, sx.y + 0.5, sx.w - 1, sx.h - 1);
-      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Similarity coordinates (X, η): frozen in time', sx.x, 6);
+      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Similarity plane (X, η): frozen', sx.x, 6);
       ctx.fillStyle = th.muted; ctx.font = `11px ${th.sans}`; ctx.textAlign = 'center'; ctx.fillText('X = r² / (2q)', sx.x + sx.w / 2, sx.y + sx.h + 6);
       ctx.save(); ctx.translate(rightX + 10, sx.y + sx.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('η = z / q^(1/2−h)', 0, 0); ctx.restore();
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = th.faint; ctx.font = `10px ${th.sans}`;

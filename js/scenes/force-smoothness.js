@@ -70,7 +70,7 @@ export default {
       for (let i = 0; i <= 60; i++) { const t = 3 / 8 + (i / 60) * (1 - 3 / 8); const s = Math.max(0, 1 - t); const r = 0.2 * Math.min(1, Math.pow(s / (1 - 3 / 8), 0.5)) * Math.min(1, timeSwitch(t) + 0.15); ctx.lineTo(TX(t), RY(r)); }
       ctx.lineTo(TX(1), RY(0)); ctx.closePath(); ctx.fill();
       hit.push({ key: 'core', x: TX(0.5), y: RY(0.2), w: TX(1) - TX(0.5), h: RY(0) - RY(0.2) });
-      labelPill(ctx, 'collapsing active region (schematic)', TX(0.56), RY(0.21) - 10, { color: th.bad, size: 9.5 });
+      labelPill(ctx, 'collapsing active region (schematic)', TX(0.62), RY(0.09), { color: th.bad, size: 9.5 });
       // t = 1 line, singular point, away extensions, Borel region
       ctx.strokeStyle = th.lineStrong; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(TX(1), px.y); ctx.lineTo(TX(1), px.y + px.h); ctx.stroke(); ctx.setLineDash([]);
       box('borel', 1, periodic ? 2 : 21 / 16, 0, periodic ? Rmax * 0.98 : 0.5, hexA(th.ok, 0.10), null);
@@ -78,13 +78,13 @@ export default {
       ctx.fillStyle = th.bad; ctx.beginPath(); ctx.arc(TX(1), RY(0), 5, 0, Math.PI * 2); ctx.fill();
       hit.push({ key: 'sing', x: TX(1) - 10, y: RY(0) - 10, w: 20, h: 14 });
       // labels
-      labelPill(ctx, '(t, x) = (1, 0): residual jets → 0, |u| → ∞', TX(1) + 8, RY(0) - 8, { color: th.bad, size: 10 });
-      labelPill(ctx, 't = 1, x ≠ 0: smooth one-sided extension', TX(1) + 8, RY(0.33), { color: th.ok, size: 10 });
-      labelPill(ctx, periodic ? 'Taylor–Borel extension, zero for t ≥ 2' : 'Taylor–Borel extension, cut off by t = 21/16', TX(1) + 8, RY(0.45), { color: th.ok, size: 10 });
+      labelPill(ctx, '(1, 0): residual jets → 0, |u| → ∞', px.x + px.w - 6, RY(0) - 8, { color: th.bad, size: 10, align: 'right' });
+      labelPill(ctx, 't = 1, x ≠ 0: one-sided extension', px.x + px.w - 6, RY(0.33), { color: th.ok, size: 10, align: 'right' });
+      labelPill(ctx, periodic ? 'Borel extension, zero for t ≥ 2' : 'Borel extension, cut off at 21/16', px.x + px.w - 6, RY(0.45), { color: th.ok, size: 10, align: 'right' });
       labelPill(ctx, 'u, p: [0,1) × K,  K = {r² ≤ 1/16, |z| ≤ 1/4}', TX(0.02), RY(0.25) - 10, { color: th.accent, size: 10 });
       labelPill(ctx, 'rest: u = p = 0', TX(0.03), RY(0.12), { color: th.accent, size: 9.5 });
       labelPill(ctx, 'ramp', TX(0.4), RY(0.12), { color: th.accent, size: 9.5 });
-      labelPill(ctx, periodic ? 'force f: periodic in x, zero for t ≤ 0 and t ≥ 2' : 'force f: support ⊆ [1/16, 21/16] × 2K,  2K = {r ≤ 1/2, |z| ≤ 1/2}', TX(periodic ? 0.02 : 1 / 16 + 0.02), RY(periodic ? 0.6 : 0.5) + 12, { color: th.warn, size: 10 });
+      labelPill(ctx, periodic ? 'force f: periodic in x, zero for t ≤ 0 and t ≥ 2' : 'f: supp ⊆ [1/16, 21/16] × 2K  (2K: r ≤ 1/2, |z| ≤ 1/2)', TX(periodic ? 0.02 : 1 / 16 + 0.02), RY(periodic ? 0.6 : 0.5) + 12, { color: th.warn, size: 10 });
       labelPill(ctx, 'f = residual of the activated fields on (0, 1)', TX(0.4), RY(0.4), { color: th.warn, size: 10 });
       // axes
       ctx.strokeStyle = th.lineStrong; ctx.lineWidth = 1; ctx.strokeRect(px.x + 0.5, px.y + 0.5, px.w - 1, px.h - 1);
@@ -100,8 +100,8 @@ export default {
       const FY = (v) => sy + sh - 6 - v * (sh - 14);
       const plot = (f, color, dash) => { ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash || []); ctx.beginPath(); for (let i = 0; i <= 300; i++) { const t = T0 + (i / 300) * (T1 - T0); const x = TX(t), y = FY(f(t)); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); } ctx.stroke(); ctx.setLineDash([]); };
       plot(timeSwitch, th.accent); if (!periodic) plot(timeCutoff, th.warn, [5, 3]);
-      labelPill(ctx, 'timeSwitch: 0 for |t| ≤ 3/8, 1 for t ≥ 3/4', TX(0.78), FY(1) + 10, { color: th.accent, size: 9.5 });
-      if (!periodic) labelPill(ctx, 'timeCutoff: 1 on [3/8, 1], 0 outside [1/16, 21/16]', TX(1.02), FY(0.5), { color: th.warn, size: 9.5 });
+      labelPill(ctx, 'timeSwitch: 0 for |t| ≤ 3/8, 1 for t ≥ 3/4', px.x + 6, FY(1) + 4, { color: th.accent, size: 9.5 });
+      if (!periodic) labelPill(ctx, 'timeCutoff: 1 on [3/8, 1], 0 outside [1/16, 21/16]', px.x + px.w - 6, FY(0.75), { color: th.warn, size: 9.5, align: 'right' });
       for (const t of [3 / 8, 3 / 4, 1, 21 / 16]) { ctx.strokeStyle = th.line; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(TX(t), sy); ctx.lineTo(TX(t), sy + sh); ctx.stroke(); ctx.setLineDash([]); }
     };
     ui.loop(() => draw());

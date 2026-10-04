@@ -27,7 +27,7 @@ export default {
     ui.slider({ label: 'Target residual height T (R = T·bump)', min: 0.1, max: 1.5, step: 0.05, value: T, onChange: (v) => { T = v; } });
     ui.slider({ label: 'Target stress t  (target = (−m, t), m = 1)', min: -1.5, max: 1.5, step: 0.01, value: tgt, onChange: (v) => { tgt = v; } });
     ui.slider({ label: 'Column slope b  (columns (−a, ∓b), a = 1)', min: 0.15, max: 1.5, step: 0.01, value: b, onChange: (v) => { b = v; } });
-    ui.note('<b>Formula-derived, generic mechanism.</b> $(a\\cos\\kappa\\Phi)^2 = \\tfrac{a^2}{2} + \\tfrac{a^2}{2}\\cos 2\\kappa\\Phi$ with $\\Phi = 2\\pi x$ and $a = \\sqrt{2R}$; the antiderivative of the leftover is computed by the trapezoid rule. Right: two signed columns $(-a,\\mp b)$ with positive scales $s_\\mp$ reach the target $(-m,t)$ iff $|a t| \\lt b m$ (Covariance.lean). The construction’s actual waves live on a torus cover with many labels and are not shown.');
+    ui.note('<b>Formula-derived, generic mechanism.</b> $(a\\cos\\kappa\\Phi)^2 = \\tfrac{a^2}{2} + \\tfrac{a^2}{2}\\cos 2\\kappa\\Phi$ with $\\Phi = 2\\pi x$ and $a = \\sqrt{2R}$; the antiderivative of the leftover is computed by the trapezoid rule and drawn magnified 25 times. Right: two signed columns $(-a,\\mp b)$ with positive scales $s_\\mp$ reach the target $(-m,t)$ iff $|a t| \\lt b m$ (Covariance.lean). The construction’s actual waves live on a torus cover with many labels and are not shown.');
 
     const draw = () => {
       const { ctx, w, h } = c; const th = theme();
@@ -54,12 +54,12 @@ export default {
       const pts = (arr, step = 1) => { const out = []; for (let i = 0; i <= N; i += step) out.push([xs[i], arr[i]]); return out; };
       const ymax = Math.max(1.3, 2.2 * T);
       lineChart(ctx, { x: 0, y: 4, w: leftW - 6, h: h - 8 }, {
-        title: 'Fast wave, its square, and the slow mean that cancels the target', xLabel: 'x (Φ = 2πx)', yLabel: 'amplitude', xDomain: [0, 1], yDomain: [-ymax * 0.7, ymax], legend: 'top-right',
+        title: 'Wave, its square, and the slow mean', xLabel: 'x (Φ = 2πx)', yLabel: 'amplitude', xDomain: [0, 1], yDomain: [-ymax * 1.25, ymax], legend: 'bottom-right',
         series: [
           { pts: pts(wave), color: hexA(th.accent, 0.55), label: 'wave a(x) cos κΦ', width: 1.2 },
           { pts: pts(sq), color: hexA(th.warn, 0.55), label: '(a cos κΦ)²', width: 1.2 },
           { pts: pts(mean, 6), color: th.ok, label: 'mean a²/2 = target R(x)', width: 3 },
-          { pts: pts(prim, 3), color: th.bad, label: '∫ leftover  (∝ 1/κ)', width: 2, dash: [5, 3] },
+          { pts: pts(prim, 3).map(([x, y]) => [x, 25 * y]), color: th.bad, label: '25 × ∫ leftover  (∝ 1/κ)', width: 2, dash: [5, 3] },
         ],
       });
       /* ---------- right: the cone / bracketing panel ---------- */
@@ -79,7 +79,7 @@ export default {
       if (ok) { const [qx, qy] = PX(-a * sMinus, -b * sMinus); ctx.strokeStyle = th.faint; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(qx, qy); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]); }
       arrow(ctx, ox, oy, tx, ty, ok ? th.ok : th.bad, 2.5);
       labelPill(ctx, `target (−m, t) = (−1, ${tgt.toFixed(2)})`, tx - 6, ty + (tgt > 0 ? 14 : -14), { color: ok ? th.ok : th.bad, align: 'right', size: 10 });
-      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Bracketing: two signed slots must reach the target', cx0 + 8, cy0 + 6);
+      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Bracketing by two signed slots', cx0 + 8, cy0 + 6);
       labelPill(ctx, ok ? `|a t| = ${Math.abs(tgt).toFixed(2)} < b m = ${b.toFixed(2)}: inside the cone` : `|a t| = ${Math.abs(tgt).toFixed(2)} ≥ b m = ${b.toFixed(2)}: outside`, cx0 + 8, cy0 + 28, { color: ok ? th.ok : th.bad, size: 10.5 });
       labelPill(ctx, 'shaded: {s₋(−a,−b) + s₊(−a,b), s± > 0}', cx0 + 8, cy0 + ch - 14, { color: th.muted, size: 9.5 });
     };
