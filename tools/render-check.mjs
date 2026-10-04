@@ -1,9 +1,11 @@
 // Headless render check: loads every route, captures console errors, takes screenshots.
-// Usage: node tools/render-check.mjs [baseUrl] [outDir]
+// Usage: node tools/render-check.mjs [baseUrl] [outDir] [--dark]
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 import { mkdirSync } from 'node:fs';
-const base = process.argv[2] || 'http://127.0.0.1:8765';
-const out = process.argv[3] || '/tmp/claude-0/-home-user-VisualNaviar/bbe5c005-cad4-513e-b9ed-807d9e724885/scratchpad/shots';
+const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+const dark = process.argv.includes('--dark');
+const base = args[0] || 'http://127.0.0.1:8765';
+const out = args[1] || '/tmp/claude-0/-home-user-VisualNaviar/bbe5c005-cad4-513e-b9ed-807d9e724885/scratchpad/shots';
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' }).catch(async () => chromium.launch());
 const page = await browser.newPage({ viewport: { width: 1400, height: 900 }, deviceScaleFactor: 1 });
@@ -11,6 +13,7 @@ const errors = [];
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`[${m.type()}] ${m.text()}`); });
 page.on('pageerror', (e) => errors.push(`[pageerror] ${e.message}`));
 await page.goto(base + '/#/', { waitUntil: 'networkidle' });
+if (dark) { await page.evaluate(() => { localStorage.setItem('bx-theme', 'dark'); document.documentElement.setAttribute('data-theme', 'dark'); }); }
 await page.waitForTimeout(800);
 await page.screenshot({ path: `${out}/home.png`, fullPage: true });
 // Collect routes from the content index.

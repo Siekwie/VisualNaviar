@@ -29,6 +29,7 @@ function parseHash() {
   const [chId, scId] = path.split('/').filter(Boolean);
   if (q.get('depth') && DEPTHS.some(([k]) => k === q.get('depth'))) { depth = q.get('depth'); store.set('bx-depth', depth); }
   if (!chId) return { home: true };
+  if (chId === 'dev' && scId) return { dev: scId };
   const ch = chapters.find((c) => c.id === chId);
   if (!ch) return { home: true };
   const entry = byKey.get(`${ch.id}/${scId}`) || flat.find((f) => f.ch === ch);
@@ -281,6 +282,12 @@ function route() {
   if (r.home) { current = null; if (mounted) { try { mounted.instance?.destroy?.(); } catch { /* */ } mounted.ui.dispose(); mounted = null; } renderHome(); document.title = 'Blowup Explorer — finite-time singularities in Navier–Stokes and Euler'; window.scrollTo(0, 0); return; }
   if (heroStop) { heroStop(); heroStop = null; }
   $('#home').hidden = true; $('#layout').hidden = false;
+  if (r.dev) { // developer preview: #/dev/<sceneKey>  — mounts a scene with default params
+    const q = new URLSearchParams((location.hash.split('?')[1] || ''));
+    let params = {}; try { params = q.get('params') ? JSON.parse(q.get('params')) : {}; } catch { /* ignore */ }
+    const entry = { ch: { id: 'dev', number: 0, title: 'Developer preview', equation: 'meta', scenes: [] }, sc: { id: r.dev, title: `Scene preview: ${r.dev}`, question: 'Developer preview of a single scene with default parameters.', visual: { scene: r.dev, label: 'schematic', params }, understand: '<p>Developer preview. Pass <code>?params=&#123;…&#125;</code> (URL-encoded JSON) to try parameters.</p>' }, i: 0, n: -1 };
+    current = entry; $('#trail').innerHTML = ''; renderStage(entry); renderExplain(entry); return;
+  }
   const entry = r.entry; current = entry;
   visited.add(`${entry.ch.id}/${entry.sc.id}`); store.set('bx-visited', [...visited]);
   renderTrail(entry); renderStage(entry); renderExplain(entry);
