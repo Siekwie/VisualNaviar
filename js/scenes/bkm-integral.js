@@ -17,9 +17,9 @@ export default {
     let g = params.gamma ?? 1, logS = 1, showGrad = false, playing = false;
     const c = ui.canvas({ aspect: 16 / 8, minHeight: 300, maxHeight: 460 });
     const ro = ui.readouts([
-      { key: 'w', label: '‖ω(t)‖∞ (model)' },
-      { key: 'I', label: '∫₀ᵗ ‖ω‖∞ ds' },
-      { key: 'L', label: 'Limit as t → T*' },
+      { key: 'w', label: 'Vorticity sup (model)' },
+      { key: 'I', label: 'Integral so far' },
+      { key: 'L', label: 'Limit at the singular time' },
       { key: 'V', label: 'Verdict (Beale–Kato–Majda)' },
     ]);
     const sl = {};
@@ -34,8 +34,8 @@ export default {
       const s = Math.pow(10, -logS), t = TS - s;
       const wv = omega(g, t), I = integral(g, t), Lim = limit(g);
       ro.update({
-        w: { value: wv, trend: 'up', detail: `T* − t = ${s.toExponential(1)}` },
-        I: { value: I, trend: 'up', detail: g < 1 ? `→ ${fmt.num(Lim)}` : '→ ∞' },
+        w: { value: wv, trend: 'up', detail: `‖ω(t)‖∞ at T* − t = ${s.toExponential(1)}` },
+        I: { value: I, trend: 'up', detail: g < 1 ? `∫₀ᵗ ‖ω‖∞ ds → ${fmt.num(Lim)}` : '∫₀ᵗ ‖ω‖∞ ds → ∞' },
         L: { value: isFinite(Lim) ? fmt.num(Lim) : '∞', trend: isFinite(Lim) ? 'flat' : 'up', detail: g < 1 ? `γ = ${g.toFixed(2)} < 1` : `γ = ${g.toFixed(2)} ≥ 1` },
         V: { value: isFinite(Lim) ? 'continues' : 'breakdown', trend: isFinite(Lim) ? 'down' : 'up', detail: isFinite(Lim) ? 'finite integral → extends past T*' : 'infinite integral → no continuation' },
       });
@@ -57,7 +57,7 @@ export default {
       for (const [tt, vv] of curve) { if (tt > t) break; ctx.lineTo(ch.X(tt), ch.Y(vv)); }
       ctx.lineTo(ch.X(t), ch.Y(wv)); ctx.lineTo(ch.X(t), ch.y0 + ch.h); ctx.closePath();
       ctx.fillStyle = th.bad; ctx.globalAlpha = 0.16; ctx.fill(); ctx.globalAlpha = 1; ctx.restore();
-      labelPill(ctx, `shaded: ∫₀ᵗ ‖ω‖∞ = ${fmt.num(I)}`, ch.x0 + 8, ch.y0 + ch.h - 14, { color: th.bad, size: 10.5 });
+      labelPill(ctx, `shaded: ∫₀ᵗ ‖ω‖∞ = ${fmt.num(I)}`, ch.x0 + 8, ch.y0 + ch.h - 36, { color: th.bad, size: 10.5 });
       // right: the running integral and its limit
       const run = []; for (let i = 0; i <= M; i++) { const tt = TS * (1 - Math.pow(10, -4 * i / M)); run.push([tt, integral(g, tt)]); }
       const yMax = Math.max(2, (isFinite(Lim) ? Lim * 1.15 : 0), I * 1.15);

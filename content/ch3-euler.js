@@ -90,7 +90,7 @@ def previousShear (J : ℕ) (X : ℝ) : ℕ → ℝ
           { decl: 'EulerPacketInduction.initialDatum_divergence', file: 'Euler/PacketFiniteLifespan.lean', line: 42, note: 'Divergence-free, from membership in the solenoidal space.' },
           { decl: 'EulerGraphInvariantFlow (module docstring on oddness)', file: 'Euler/ParentPacketParity.lean', line: 6, note: '“Oddness of the actual displacement propagates … fixes the origin … The genuine child flow preserves it.”' },
           { decl: 'strain_origin', file: 'Euler/ParentEulerParity.lean', line: 38, note: 'A.strain.field t 0 = fderiv ℝ (fun y => E.velocity (t,y)) 0: at the origin the strain is the velocity gradient.' },
-          { decl: 'EulerScale (reindexing note)', file: 'Euler/EulerProof.lean', line: 18954, note: '“x 0 = x_{J-1} and x (n+1) = (J+n)^2 x n; hence J+n is the stage index in the source.”' },
+          { decl: 'EulerProof.lean (module docstring of the EulerScale section: reindexing note)', file: 'Euler/EulerProof.lean', line: 18954, module: true, note: '“x 0 = x_{J-1} and x (n+1) = (J+n)^2 x n; hence J+n is the stage index in the source.”' },
           { decl: 'EulerPeriodicProfile.profile / graphMap / truncation', file: 'Euler/EulerProof.lean', line: 11758, note: 'profile δ t = arctan (sin t / (1 + δ − cos t)) (line 11758); graphMap k m v = (v, k⟨m,v⟩) (line 12439); truncation k = ⌊k^ϑ⌋, ϑ = 10⁻⁶ (PacketSourceFrequency.lean:13–15).' },
         ],
         context: [
@@ -296,7 +296,7 @@ theorem lifespan_le_one : lifespan.duration ≤ 1</pre>` },
         limits: [
           'The frame numbers $a_n$, $\\beta_n$ are not numeric in the Lean; the scene replaces all of them by one slider value inside the hypothesised range. Real activation times are not known.',
           '$J$ and $X$ are chosen by existence; the slider ranges are illustrative. The condition “$X \\gtrsim 3.6\\times10^6$ for $J = 3$” is derived here from the Lean formulas and is not a Lean statement.',
-          'Times are drawn relative to $\\mathrm{baseHorizon}$, which is itself of order $10^{-3700}$ or smaller for the displayed $X$; the absolute $T^*$ is unknown beyond $0 \\lt T^* \\le \\mathrm{baseHorizon} \\le 1$.',
+          'Times are drawn relative to $\\mathrm{baseHorizon}$, which is itself of order $10^{-3000}$ or smaller for the displayed $X$; the absolute $T^*$ is unknown beyond $0 \\lt T^* \\le \\mathrm{baseHorizon} \\le 1$.',
           'Spike heights are compressed for display; only their labels are the formula values.',
           'The $H^3$ stability theorem and the local-existence theory are used here as black boxes; their statements are cited, their proofs are not shown.',
         ],

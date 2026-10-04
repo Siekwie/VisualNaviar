@@ -39,17 +39,17 @@ export default {
   id: 'strain-amplification', label: 'numerically-computed',
   mount(host, params, ui) {
     let beta = params.beta ?? 0.02, v1 = params.v1 ?? 0, extend = false, playing = true;
-    const b = 0.35, sigma = 1.0;           // toy strain: compression rate and shear strength (display only)
-    const tauMax = Math.log(3) / b;        // the toy runs until the layer spacing has shrunk threefold
+    const b = 0.35, sigma = 0.8;           // toy strain: compression rate and shear strength (display only)
+    const tauMax = Math.log(2.2) / b;      // the toy runs until the layer spacing has shrunk by 2.2
     let sol = solve(beta, v1, 1), tAnim = 0;
     const resolve = () => { sol = solve(beta, v1, extend ? 3 : 1); };
     const c = ui.canvas({ aspect: 16 / 8.6, minHeight: 330, maxHeight: 500 });
     const ro = ui.readouts([
-      { key: 'T', label: 'Endpoint T = 1/√β' },
+      { key: 'T', label: 'Endpoint time T' },
       { key: 'VT', label: 'V(T), integrated' },
-      { key: 'B', label: 'Lean lower bound e^(1/(4√β))' },
+      { key: 'B', label: 'Lean lower bound' },
       { key: 'R', label: 'V(T) ÷ bound' },
-      { key: 'K', label: 'Toy: layer spacing ÷ e^(bt)' },
+      { key: 'K', label: 'Toy wavenumber gain' },
     ]);
     ui.slider({ label: 'β in equation (30)  (Lean: 0 < β ≤ 1/16)', min: 0.004, max: 0.0625, step: 0.0005, value: beta, format: (v) => v.toFixed(4), hint: 'In the stage, β ≈ 1/xₙ² (tilt invariant ½ ≤ σ²xₙ² ≤ 2), so the gain e^(1/(4√β)) ≈ e^(xₙ/4) is enormous.', onChange: (v) => { beta = v; resolve(); } });
     ui.slider({ label: 'Initial slope V′(0)  (Lean: ≥ 0)', min: 0, max: 2, step: 0.05, value: v1, onChange: (v) => { v1 = v; resolve(); } });
@@ -61,18 +61,18 @@ export default {
       const { ctx, w, h } = c; const th = theme();
       const e1 = Math.exp(b * tau), e2 = Math.exp(-b * tau), sh = sigma * Math.sinh(b * tau) / b;
       ro.update({
-        T: { value: fmt.num(sol.T), detail: `β = ${beta.toFixed(4)}` },
-        VT: { value: fmt.num(sol.VT), trend: 'up', detail: 'V(0) = 1' },
-        B: { value: fmt.num(sol.bound), detail: 'equation30_endpoint_exponential' },
+        T: { value: fmt.num(sol.T), detail: `T = 1/√β, β = ${beta.toFixed(4)}` },
+        VT: { value: fmt.num(sol.VT), trend: 'up', detail: 'V(0) = 1, RK4' },
+        B: { value: fmt.num(sol.bound), detail: 'e^(1/(4√β)), equation30_endpoint_exponential' },
         R: { value: fmt.num(sol.VT / sol.bound), trend: sol.VT >= sol.bound ? 'up' : 'down', detail: sol.VT >= sol.bound ? 'bound respected' : 'bound violated (numerical error?)' },
-        K: { value: fmt.num(e1), trend: 'up', detail: `toy time t = ${tau.toFixed(2)}, b = ${b}` },
+        K: { value: fmt.num(e1), trend: 'up', detail: `e^(bt): layer spacing ÷ ${e1.toFixed(2)}, toy t = ${tau.toFixed(2)}` },
       });
       ctx.clearRect(0, 0, w, h);
       /* ---- left: schematic geometry ---- */
       const leftW = Math.round(w * 0.5);
       ctx.save(); ctx.beginPath(); ctx.rect(0, 0, leftW, h); ctx.clip();
       ctx.fillStyle = th.sunken; ctx.fillRect(0, 0, leftW, h);
-      const cx = leftW * 0.5, cy = h * 0.54, R = Math.min(leftW, h) * 0.26;
+      const cx = leftW * 0.5, cy = h * 0.54, R = Math.min(leftW, h) * 0.22;
       const P = (xv, xm) => [cx + R * xv, cy - R * xm];
       // background strain field u = M x = (σ x_m + b x_v) v̂ − b x_m m̂
       ctx.strokeStyle = th.faint; ctx.fillStyle = th.faint; ctx.globalAlpha = 0.55; ctx.lineWidth = 1;
@@ -86,7 +86,7 @@ export default {
       }
       ctx.globalAlpha = 1;
       // deformed envelope F(disc)
-      const r0 = 0.62;
+      const r0 = 0.5;
       ctx.beginPath();
       for (let k = 0; k <= 72; k++) {
         const a = (k / 72) * Math.PI * 2; const xv = r0 * Math.cos(a), xm = r0 * Math.sin(a);
@@ -113,20 +113,21 @@ export default {
         labelPill(ctx, lbl, x1 + (align === 'right' ? -6 : 6), y1 - 10, { color: col, align, size: 10.5 });
       };
       const [ox, oy] = P(0, 0);
-      const mlen = Math.min(0.95, 0.5 * e1);
-      arrow(ox, oy, ...P(0, mlen), th.bad, `ray m(t): |m| ∝ e^(bt) = ${e1.toFixed(2)}`, 'left');
-      arrow(ox, oy, ...P(0.75, 0), th.accent, 'v  (⟨m, v⟩ = 0)', 'right');
+      const mlen = Math.min(1.1, 0.55 * e1);
+      arrow(ox, oy, ...P(0, mlen), th.bad, `ray m  (×${e1.toFixed(2)})`, 'right');
+      arrow(ox, oy, ...P(0.8, 0), th.accent, 'v ⟂ m', 'left');
       ctx.fillStyle = th.fg; ctx.beginPath(); ctx.arc(ox, oy, 3, 0, Math.PI * 2); ctx.fill();
-      labelPill(ctx, 'strain at the origin:  M ≈ B + σ·(v̂ ⊗ m̂),   ⟨B m̂, m̂⟩ = −b < 0', 8, 14, { color: th.fg, size: 10.5 });
-      labelPill(ctx, 'layers ⟂ m̂ slide along v̂ (shear) and close up (compression)', 8, 32, { color: th.muted, size: 10 });
-      labelPill(ctx, `next packet normal := m̂ at activation (joinedNormal) · spacing ×${e2.toFixed(2)}`, 8, h - 14, { color: th.muted, size: 10 });
+      labelPill(ctx, 'strain at the origin:  M ≈ B + σ·(v̂ ⊗ m̂)', 8, 14, { color: th.fg, size: 10.5 });
+      labelPill(ctx, 'compression invariant:  ⟨B m̂, m̂⟩ = −b < 0', 8, 32, { color: th.fg, size: 10.5 });
+      labelPill(ctx, 'layers ⟂ m̂ slide along v̂ and close up', 8, 50, { color: th.muted, size: 10 });
+      labelPill(ctx, `next normal := m̂ (joinedNormal) · spacing ×${e2.toFixed(2)}`, 8, h - 14, { color: th.muted, size: 10 });
       ctx.restore();
       /* ---- right: equation (30) ---- */
-      const series = [{ pts: sol.pts, color: th.numeric, label: 'V(t), equation (30)' },
-        { pts: [[0, sol.bound], [sol.T, sol.bound]], color: th.euler, dash: [5, 3], label: 'Lean lower bound at T:  e^(1/(4√β))' }];
-      if (extend) series.push({ pts: sol.post, color: th.warn, dash: [2, 3], label: 'post-inversion bound  V(T)·T/t' });
+      const series = [{ pts: sol.pts, color: th.numeric, label: 'V(t)' },
+        { pts: [[0, sol.bound], [sol.T, sol.bound]], color: th.euler, dash: [5, 3], label: 'bound e^(1/(4√β)) at T' }];
+      if (extend) series.push({ pts: sol.post, color: th.warn, dash: [2, 3], label: 'V(T)·T/t after T' });
       lineChart(ctx, { x: leftW + 6, y: 4, w: w - leftW - 10, h: h - 8 }, {
-        title: 'd/dt[(1+(βt²)²) V′] = 2(1 − β·βt²) V,  V(0) = 1', xLabel: 't  (rescaled time of equation (30))', yLabel: 'V (log)',
+        title: 'eq. (30): [(1+(βt²)²)V′]′ = 2(1−β²t²)V', xLabel: 't  (rescaled time of equation (30))', yLabel: 'V (log)',
         yLog: true, xDomain: [0, (extend ? 3 : 1) * sol.T], yDomain: [Math.max(0.3, Math.min(1, sol.VT) * 0.8), Math.max(sol.VT, sol.bound) * 3],
         series, marker: sol.T, legend: 'top-left',
       });

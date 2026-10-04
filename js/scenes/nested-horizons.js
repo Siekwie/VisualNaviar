@@ -8,7 +8,7 @@
 //   Hypotheses ½ ≤ a_n ≤ 2 and ½ ≤ β_n x_n² ≤ 2 (PacketNestedHorizons.lean:35-38); in a stage a_n = frame.a and
 //   β_n = frame.sigma² (PacketStageRestriction.lean:18-19). They enter only through q_n = a_n β_n x_n², since
 //     stepLength n = timeWidth n / (3 √q_n),  so  timeWidth/6 ≤ stepLength ≤ 2·timeWidth/3  (stepLength_bounds).
-//   The nesting needs timeWidth (n+1) ≤ timeWidth n / 2 (field next_width, PacketSourceScaleGuards.lean:129).
+//   The nesting needs timeWidth (n+1) ≤ timeWidth n / 2 (StageGuards.next_width, PacketSourceScaleGuards.lean:129).
 // The scene uses one q for every stage (a placeholder inside the Lean's range). All times are shown relative
 // to baseHorizon, which is itself astronomically small; absolute values are printed as powers of ten.
 import { theme, labelPill, fmt } from '../scene-runtime.js';
@@ -29,22 +29,22 @@ function compute(J, X, q) {
   const lnTw = [], lnStep = [];
   for (let n = 0; n <= ROWS + 1; n++) { lnTw[n] = Math.log(3) + lnx[n + 1] + lnx[n] - 0.5 * lnPrev(n); lnStep[n] = lnTw[n] - Math.log(3) - 0.5 * Math.log(q); }
   const lnBase = Math.log(6) + 2 * Math.log(J) - 498 * Math.log(X);   // = ln 2 + lnTw[0]
-  const rows = []; let timeFrac = 0;
+  const rows = [];
   for (let n = 0; n <= ROWS; n++) {
     const r = Math.exp(lnTw[n + 1] - lnTw[n]);                      // timeWidth(n+1)/timeWidth(n)
-    rows.push({ n, timeFrac, stepFrac: Math.exp(lnStep[n] - lnBase), widthFrac: Math.exp(lnTw[n] - lnBase) * 2,
-      r, l10r: (lnTw[n + 1] - lnTw[n]) / LN10, ok: r <= 0.5, l10grad: n === 0 ? NaN : lnPrev(n) / LN10 - Math.log10(2) });
-    timeFrac += Math.exp(lnStep[n] - lnBase);
+    rows.push({ n, l10stepFrac: (lnStep[n] - lnBase) / LN10, r, l10r: (lnTw[n + 1] - lnTw[n]) / LN10, ok: r <= 0.5,
+      l10grad: n === 0 ? NaN : lnPrev(n) / LN10 - Math.log10(2) });
   }
   return { rows, l10base: lnBase / LN10, nextFrac: 1 / (6 * Math.sqrt(q)), firstFail: rows.find((rw) => !rw.ok)?.n ?? -1 };
 }
+function sub(n) { return String(n).split('').map((d) => '₀₁₂₃₄₅₆₇₈₉'[Number(d)]).join(''); }
 
 export default {
   id: 'nested-horizons', label: 'formula-derived',
   mount(host, params, ui) {
     let J = params.J ?? 3, l10X = params.log10X ?? 7.5, q = params.q ?? 1;
     let D = compute(J, Math.pow(10, l10X), q);
-    const c = ui.canvas({ aspect: 16 / 9, minHeight: 360, maxHeight: 540 });
+    const c = ui.canvas({ aspect: 16 / 9.5, minHeight: 380, maxHeight: 560 });
     const ro = ui.readouts([
       { key: 'base', label: 'baseHorizon = 6J²X^(−498)' },
       { key: 't1', label: 'First activation t₁' },
@@ -61,24 +61,26 @@ export default {
         nest: { value: D.firstFail < 0 ? `holds for n ≤ ${ROWS}` : `fails at n = ${D.firstFail}`, trend: D.firstFail < 0 ? 'flat' : 'up', detail: D.firstFail < 0 ? 'as the Scales record guarantees' : 'this (J, X) is not admissible in the Lean' },
       });
       ctx.clearRect(0, 0, w, h);
-      const xL = 150, xR = w - 24;
+      const xL = 150, xR = w - 24, span = xR - xL;
       /* ---- top: absolute axis 0 … baseHorizon ---- */
       const yA = 40;
       ctx.strokeStyle = th.lineStrong; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(xL, yA); ctx.lineTo(xR, yA); ctx.stroke();
-      const tick = (x, lbl, col, up) => { ctx.strokeStyle = col; ctx.beginPath(); ctx.moveTo(x, yA - 6); ctx.lineTo(x, yA + 6); ctx.stroke(); labelPill(ctx, lbl, x, up ? yA - 17 : yA + 17, { color: col, align: 'center', size: 10 }); };
-      tick(xL, '0', th.muted, true); tick(xR, `baseHorizon = ${p10(D.l10base)}`, th.muted, true);
-      tick(xL + (xR - xL) / 12, 'baseHorizon/12', th.faint, false);
-      const x1 = xL + (xR - xL) * D.nextFrac;
+      const tick = (x, lbl, col, up, align = 'center') => { ctx.strokeStyle = col; ctx.beginPath(); ctx.moveTo(x, yA - 6); ctx.lineTo(x, yA + 6); ctx.stroke(); labelPill(ctx, lbl, x, up ? yA - 17 : yA + 17, { color: col, align, size: 10 }); };
+      tick(xL, '0', th.muted, true); tick(xR, `baseHorizon = ${p10(D.l10base)}`, th.muted, true, 'right');
+      tick(xL + span / 12, 'baseHorizon/12', th.faint, false);
+      const x1 = xL + span * D.nextFrac;
       tick(x1, 't₁ (stage 1 switched on)', th.euler, true);
-      labelPill(ctx, `t₂, t₃, … lie within ${p10(Math.log10(D.rows[1].stepFrac) + 0.3)} × baseHorizon of t₁  →  T* ≤ baseHorizon`, x1 + 6, yA + 17, { color: th.fg, size: 10 });
-      labelPill(ctx, 'absolute time (one unit = baseHorizon)', 8, yA, { color: th.muted, size: 10 });
+      labelPill(ctx, `t₂, t₃, … lie within ${p10(D.rows[1].l10stepFrac + 0.3)} × baseHorizon of t₁  →  T* ≤ baseHorizon`, x1 + 6, yA + 17, { color: th.fg, size: 10 });
+      labelPill(ctx, 'absolute time (unit = baseHorizon)', 8, yA, { color: th.muted, size: 10 });
       /* ---- rows: each horizon rescaled to full width ---- */
-      const top = 76, rowH = (h - top - 6) / ROWS;
+      const top = 78, rowH = (h - top - 30) / ROWS;
       for (let i = 0; i < ROWS; i++) {
         const rw = D.rows[i], y = top + i * rowH + rowH * 0.62;
         const yPrev = top + (i - 1) * rowH + rowH * 0.62;
+        const xa = xL + span * D.nextFrac;
+        const wNext = Math.min(xR - xa, Math.max(3, span * rw.r));
         if (i > 0) { // zoom lines from the previous row's "next horizon" strip to this row
-          const pr = D.rows[i - 1]; const xa = xL + (xR - xL) * D.nextFrac, xb = xa + Math.max(3, (xR - xL) * pr.r);
+          const pr = D.rows[i - 1]; const xb = xa + Math.min(xR - xa, Math.max(3, span * pr.r));
           ctx.strokeStyle = th.line; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(xa, yPrev + 4); ctx.lineTo(xL, y - 4); ctx.moveTo(xb, yPrev + 4); ctx.lineTo(xR, y - 4); ctx.stroke(); ctx.setLineDash([]);
         }
         // the stage's own horizon [t_n, t_n + 2·timeWidth n]
@@ -92,22 +94,20 @@ export default {
           ctx.strokeStyle = th.bad; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xL, y); ctx.lineTo(xL, y - hs); ctx.stroke();
           labelPill(ctx, `|∇u(tₙ,0)| ≥ previousShearₙ/2 = ${p10(rw.l10grad)}`, xL + 8, y - hs - 2, { color: th.bad, size: 10 });
         } else {
-          labelPill(ctx, 'no lower bound at n = 0 (gradient_lower needs n ≠ 0)', xL + 8, y - 12, { color: th.faint, size: 10 });
+          labelPill(ctx, 'no bound at n = 0', xR, y - 12, { color: th.faint, size: 10, align: 'right' });
         }
         // next activation and the next (nested) horizon
-        const xa = xL + (xR - xL) * D.nextFrac, wNext = Math.max(3, (xR - xL) * rw.r);
         ctx.fillStyle = rw.ok ? th.euler : th.bad; ctx.globalAlpha = 0.85; ctx.fillRect(xa, y - 4, wNext, 8); ctx.globalAlpha = 1;
         ctx.strokeStyle = th.euler; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(xa, y - 9); ctx.lineTo(xa, y + 9); ctx.stroke();
         labelPill(ctx, `t${sub(i + 1)} = t${sub(i)} + tw${sub(i)}/(3√q)`, xa, y + 18, { color: th.euler, size: 10, align: 'center' });
-        labelPill(ctx, `next horizon: ${p10(rw.l10r)} × this one ${rw.ok ? '(≤ ½ ✓)' : '(> ½ ✗ not admissible)'}`, Math.min(xa + wNext + 8, xR - 150), y - 12, { color: rw.ok ? th.ok : th.bad, size: 10 });
+        labelPill(ctx, `next horizon: ${p10(rw.l10r)} × this one ${rw.ok ? '(≤ ½ ✓)' : '(> ½ ✗)'}`, Math.min(xa + wNext + 8, xR - 250), y - 12, { color: rw.ok ? th.ok : th.bad, size: 10 });
       }
     };
     ui.slider({ label: 'Stage offset J  (Lean: 3 ≤ J)', min: 3, max: 6, step: 1, value: J, format: (v) => `J = ${v}`, onChange: (v) => { J = v; D = compute(J, Math.pow(10, l10X), q); draw(); } });
     ui.slider({ label: 'Base scale X  (Lean: 8 ≤ X, chosen by existence)', min: 6, max: 9, step: 0.05, value: l10X, format: (v) => `X = 10^${v.toFixed(2)}`, hint: 'Below roughly X ≈ 4·10⁶ (for J = 3) the first nesting ratio exceeds ½; the Lean’s Scales exclude such X.', onChange: (v) => { l10X = v; D = compute(J, Math.pow(10, l10X), q); draw(); } });
     ui.slider({ label: 'q = aₙ·βₙ·xₙ²  (Lean: ¼ ≤ q ≤ 4; placeholder, one value for all n)', min: 0.25, max: 4, step: 0.05, value: q, format: (v) => fmt.num(v, 2), onChange: (v) => { q = v; D = compute(J, Math.pow(10, l10X), q); draw(); } });
-    ui.note('<b>Formula-derived.</b> Times are computed from <code>stepLength</code>, <code>activationTime</code>, <code>horizonTime</code>, <code>timeWidth</code> and <code>baseHorizon</code> as defined in the Lean, with the unknown frame numbers aₙ and βₙ replaced by one placeholder q inside the range the Lean hypothesises. Each row rescales one stage’s horizon to full width; the shaded strip is the next stage’s horizon at true relative size (at least 3 px). Spike heights are compressed; their labels are exact.');
+    ui.note('<b>Formula-derived.</b> Times are computed from <code>stepLength</code>, <code>activationTime</code>, <code>horizonTime</code>, <code>timeWidth</code> and <code>baseHorizon</code> as defined in the Lean, with the unknown frame numbers aₙ and βₙ replaced by one placeholder q inside the range the Lean hypothesises. Each row rescales one stage’s horizon to full width; the shaded strip is the next stage’s horizon at true relative size (at least 3 px). Spike heights are compressed; their labels are exact. Stage 0 has no spike because <code>gradient_lower</code> requires n ≠ 0.');
     c.onResize(() => draw());
     return { destroy() {} };
   },
 };
-function sub(n) { return String(n).split('').map((d) => '₀₁₂₃₄₅₆₇₈₉'[Number(d)]).join(''); }
