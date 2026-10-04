@@ -15,6 +15,8 @@ const TITLE_ENERGY = ['Energy envelope: E′ ≤ E + C, E(0) = 0', 'Energy envel
 const LAB_PLATEAU = ['plateau: χ ≡ 1  (r² < 1/32, |z| < 1/8)', 'plateau: χ ≡ 1'];
 const LAB_K = ['K: r² ≤ 1/16, |z| ≤ 1/4  (χ = 0 outside)', 'K: χ = 0 outside'];
 const LAB_2K = ['2K: force support (whole-space case)', '2K: force support'];
+const LEGEND_LONG = ['Lean bound: ‖u‖² ≤ C·e', 'envelope C(eᵗ − 1)', 'kinetic-energy bound ½·C·e', 'force bound C'];
+const LEGEND_SHORT = ['‖u‖² ≤ C·e', 'C(eᵗ − 1)', 'kinetic ½·C·e', 'C'];
 const LAB_ENV = ['the actual E(t) is below the envelope; not computed', 'actual E(t): below the envelope, not computed', 'E(t) not computed'];
 
 const chi = (x0, x2) => cutoff(16 * x0 * x0) * cutoff(4 * x2);
@@ -83,13 +85,14 @@ export default {
       /* ---------- right: energy envelope ---------- */
       const pts = (f) => { const out = []; for (let i = 0; i <= 100; i++) { const t = i / 100; out.push([t, f(t)]); } return out; };
       const ymax = C * Math.E * 1.5;
+      const LEG = fitText(ctx, [LEGEND_LONG[2], ''], w - leftW - 8 - 56 - 30, `11.5px ${th.sans}`) !== '' ? LEGEND_LONG : LEGEND_SHORT;
       const ch = lineChart(ctx, { x: leftW + 4, y: 4, w: w - leftW - 8, h: h - 8 }, {
         title: fitText(ctx, TITLE_ENERGY, w - leftW - 8 - 56, `600 12px ${th.sans}`), xLabel: 't', yLabel: 'E = ‖u(t)‖²_{L²}', xDomain: [0, 1], yDomain: [0, ymax], legend: 'top-left',
         series: [
-          { pts: pts(() => C * Math.E), color: th.bad, dash: [6, 4], label: 'Lean bound: ‖u‖² ≤ C·e', width: 2 },
-          { pts: pts((t) => C * (Math.exp(t) - 1)), color: th.accent, label: 'envelope C(eᵗ − 1)', width: 3 },
-          { pts: pts(() => 0.5 * C * Math.E), color: th.ok, dash: [2, 3], label: 'kinetic-energy bound ½·C·e', width: 2 },
-          { pts: pts(() => C), color: th.faint, dash: [1, 3], label: 'force bound C' },
+          { pts: pts(() => C * Math.E), color: th.bad, dash: [6, 4], label: LEG[0], width: 2 },
+          { pts: pts((t) => C * (Math.exp(t) - 1)), color: th.accent, label: LEG[1], width: 3 },
+          { pts: pts(() => 0.5 * C * Math.E), color: th.ok, dash: [2, 3], label: LEG[2], width: 2 },
+          { pts: pts(() => C), color: th.faint, dash: [1, 3], label: LEG[3] },
         ],
         marker: tMark,
       });

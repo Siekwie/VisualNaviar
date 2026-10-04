@@ -95,7 +95,7 @@ export default {
       const far = 2.6; const [p1x, p1y] = PX(-a * far, -b * far), [p2x, p2y] = PX(-a * far, b * far);
       ctx.fillStyle = hexA(th.ok, 0.18); ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(p1x, p1y); ctx.lineTo(p2x, p2y); ctx.closePath(); ctx.fill();
       ctx.strokeStyle = th.line; ctx.beginPath(); ctx.moveTo(cx0 + 8, oy); ctx.lineTo(cx0 + cw - 8, oy); ctx.moveTo(ox, cy0 + 8); ctx.lineTo(ox, cy0 + ch - 8); ctx.stroke();
-      ctx.fillStyle = th.faint; ctx.font = `10.5px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('N', ox + 6, cy0 + ch - 20); ctx.fillText('K', ox + 6, cy0 + 8);
+      ctx.fillStyle = th.faint; ctx.font = `10.5px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('N', ox + 6, cy0 + ch - 20); ctx.fillText('K', ox + 6, cy0 + 46);
       const col = (nx, ky, color, label) => { const [x, y] = PX(nx, ky); arrow(ctx, ox, oy, x, y, color, 2); labelPill(ctx, label, x - 4, y + (ky > 0 ? -12 : 12), { color, align: 'right', size: 10 }); };
       col(-a, -b, th.accent, 'column (−a, −b)'); col(-a, b, th.accent, 'column (−a, +b)');
       // target and its decomposition

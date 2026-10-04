@@ -12,6 +12,23 @@ import { cutoff } from './error-ledger.js';
 import { hexA, fitText } from './similarity-zoom.js';
 
 const TITLE = ['Space-time support of the fields and of the force  (hover or click a region)', 'Space-time support of fields and force (hover a region)', 'Supports of fields and force'];
+/** Bounding box of a labelPill, in CSS pixels. */
+function pillBox(ctx, th, text, x, y, size, align) {
+  ctx.save(); ctx.font = `600 ${size}px ${th.sans}`; const w = ctx.measureText(text).width + 12; ctx.restore();
+  const h = size + 8, x0 = align === 'right' ? x - w : x;
+  return { x0, x1: x0 + w, y0: y - h / 2, y1: y + h / 2 };
+}
+const hits = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+/** Draw the first candidate wording whose pill stays inside `panel` and clear of `obstacles`; the last candidate otherwise. */
+function pillFit(ctx, th, candidates, x, y, opts, panel, obstacles) {
+  let pick = candidates[candidates.length - 1];
+  for (const txt of candidates) {
+    const b = pillBox(ctx, th, txt, x, y, opts.size, opts.align);
+    if (b.x0 >= panel.x && b.x1 <= panel.x + panel.w && !obstacles.some((o) => hits(b, o))) { pick = txt; break; }
+  }
+  labelPill(ctx, pick, x, y, opts);
+  return pillBox(ctx, th, pick, x, y, opts.size, opts.align);
+}
 
 const timeSwitch = (t) => 1 - cutoff((4 / 3) * t);
 const timeCutoff = (t) => cutoff((8 / 5) * (t - 11 / 16));
@@ -72,22 +89,24 @@ export default {
       for (let i = 0; i <= 60; i++) { const t = 3 / 8 + (i / 60) * (1 - 3 / 8); const s = Math.max(0, 1 - t); const r = 0.2 * Math.min(1, Math.pow(s / (1 - 3 / 8), 0.5)) * Math.min(1, timeSwitch(t) + 0.15); ctx.lineTo(TX(t), RY(r)); }
       ctx.lineTo(TX(1), RY(0)); ctx.closePath(); ctx.fill();
       hit.push({ key: 'core', x: TX(0.5), y: RY(0.2), w: TX(1) - TX(0.5), h: RY(0) - RY(0.2) });
-      labelPill(ctx, 'collapsing active region (schematic)', TX(0.62), RY(0.09), { color: th.bad, size: 9.5 });
+      // (the singular-point pill is drawn later; its box is recomputed here so this label can dodge it)
+      pillFit(ctx, th, ['collapsing active region (schematic)', 'collapsing region (schematic)', 'collapse (schematic)'], TX(0.62), RY(0.09), { color: th.bad, size: 9.5 }, { x: px.x + 6, w: px.w - 12 }, [pillBox(ctx, th, '(1, 0): residual jets → 0, |u| → ∞', px.x + px.w - 6, RY(0) - 8, 10, 'right')]);
       // t = 1 line, singular point, away extensions, Borel region
       ctx.strokeStyle = th.lineStrong; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(TX(1), px.y); ctx.lineTo(TX(1), px.y + px.h); ctx.stroke(); ctx.setLineDash([]);
       box('borel', 1, periodic ? 2 : 21 / 16, 0, periodic ? Rmax * 0.98 : 0.5, hexA(th.ok, 0.10), null);
       box('away', 0.985, 1.015, 0.06, periodic ? Rmax * 0.98 : 0.5, hexA(th.ok, 0.0), th.ok, [2, 2]);
       ctx.fillStyle = th.bad; ctx.beginPath(); ctx.arc(TX(1), RY(0), 5, 0, Math.PI * 2); ctx.fill();
       hit.push({ key: 'sing', x: TX(1) - 10, y: RY(0) - 10, w: 20, h: 14 });
-      // labels
-      labelPill(ctx, '(1, 0): residual jets → 0, |u| → ∞', px.x + px.w - 6, RY(0) - 8, { color: th.bad, size: 10, align: 'right' });
-      labelPill(ctx, 't = 1, x ≠ 0: one-sided extension', px.x + px.w - 6, RY(0.33), { color: th.ok, size: 10, align: 'right' });
-      labelPill(ctx, periodic ? 'Borel extension, zero for t ≥ 2' : 'Borel extension, cut off at 21/16', px.x + px.w - 6, RY(0.45), { color: th.ok, size: 10, align: 'right' });
-      labelPill(ctx, fitText(ctx, [periodic ? 'u, p: [0,1) × K in each period cell,  K = {r² ≤ 1/16, |z| ≤ 1/4}' : 'u, p: [0,1) × K,  K = {r² ≤ 1/16, |z| ≤ 1/4}', 'u, p: [0,1) × K'], px.x + px.w - TX(0.02) - 8, `600 10px ${th.sans}`, 12), TX(0.02), RY(0.25) - 10, { color: th.accent, size: 10 });
+      // labels: the right-aligned pills first, then the left-aligned ones, worded to stay clear of them
+      const sing = pillFit(ctx, th, ['(1, 0): residual jets → 0, |u| → ∞', '(1, 0): jets → 0, |u| → ∞'], px.x + px.w - 6, RY(0) - 8, { color: th.bad, size: 10, align: 'right' }, px, []);
+      const away = pillFit(ctx, th, ['t = 1, x ≠ 0: one-sided extension', 'x ≠ 0: one-sided extension'], px.x + px.w - 6, RY(0.33), { color: th.ok, size: 10, align: 'right' }, px, []);
+      const borel = pillFit(ctx, th, [periodic ? 'Borel extension, zero for t ≥ 2' : 'Borel extension, cut off at 21/16', 'Borel extension'], px.x + px.w - 6, RY(0.45), { color: th.ok, size: 10, align: 'right' }, px, []);
+      const walls = { x: px.x + 6, w: px.w - 12 };
+      pillFit(ctx, th, [periodic ? 'u, p: [0,1) × K in each period cell,  K = {r² ≤ 1/16, |z| ≤ 1/4}' : 'u, p: [0,1) × K,  K = {r² ≤ 1/16, |z| ≤ 1/4}', 'u, p: [0,1) × K'], TX(0.02), RY(0.25) - 10, { color: th.accent, size: 10 }, walls, [away]);
       labelPill(ctx, 'rest: u = p = 0', TX(0.03), RY(0.12), { color: th.accent, size: 9.5 });
       labelPill(ctx, 'ramp', TX(0.4), RY(0.12), { color: th.accent, size: 9.5 });
-      { const fx = TX(periodic ? 0.02 : 1 / 16 + 0.02); labelPill(ctx, fitText(ctx, [periodic ? 'force f: periodic in x, zero for t ≤ 0 and t ≥ 2' : 'f: supp ⊆ [1/16, 21/16] × 2K  (2K: r ≤ 1/2, |z| ≤ 1/2)', periodic ? 'f: zero for t ≤ 0 and t ≥ 2' : 'f: supp ⊆ [1/16, 21/16] × 2K'], px.x + px.w - fx - 8, `600 10px ${th.sans}`, 12), fx, RY(periodic ? 0.6 : 0.5) + 12, { color: th.warn, size: 10 }); }
-      labelPill(ctx, 'f = residual of the activated fields on (0, 1)', TX(0.4), RY(0.37), { color: th.warn, size: 10 });
+      pillFit(ctx, th, periodic ? ['force f: periodic in x, zero for t ≤ 0 and t ≥ 2', 'f: zero for t ≤ 0 and t ≥ 2'] : ['f: supp ⊆ [1/16, 21/16] × 2K  (2K: r ≤ 1/2, |z| ≤ 1/2)', 'f: supp ⊆ [1/16, 21/16] × 2K', 'f: [1/16, 21/16] × 2K'], TX(periodic ? 0.02 : 1 / 16 + 0.02), RY(periodic ? 0.6 : 0.5) + 12, { color: th.warn, size: 10 }, walls, [borel]);
+      pillFit(ctx, th, ['f = residual of the activated fields on (0, 1)', 'f = residual on (0, 1)', 'f = residual'], TX(0.4), RY(0.39), { color: th.warn, size: 10 }, walls, [borel, away]);
       // axes
       ctx.strokeStyle = th.lineStrong; ctx.lineWidth = 1; ctx.strokeRect(px.x + 0.5, px.y + 0.5, px.w - 1, px.h - 1);
       ctx.fillStyle = th.muted; ctx.font = `10.5px ${th.sans}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';

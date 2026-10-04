@@ -160,7 +160,7 @@ export default {
       ctx.save(); ctx.translate(rightX + 10, sx.y + sx.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('η = z / q^(1/2−h)', 0, 0); ctx.restore();
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = th.faint; ctx.font = `10px ${th.sans}`;
       ctx.fillText('+1', sx.x - 4, SY(1)); ctx.fillText('−1', sx.x - 4, SY(-1)); ctx.fillText('0', sx.x - 4, SY(0));
-      ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText('X_L', SX(XL), sx.y + sx.h + 2); ctx.fillText('X_R', SX(XR), sx.y + sx.h + 2);
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; ctx.fillText('X_L', SX(XL) + 3, sx.y + sx.h - 3); ctx.fillText('X_R', SX(XR) + 3, sx.y + sx.h - 3);
     };
     ui.loop((dt) => {
       if (playing) { logS = Math.min(3, logS + dt * 0.45); sT.set(logS, false); if (logS >= 3) playing = false; }

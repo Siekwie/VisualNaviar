@@ -15,6 +15,8 @@ import { fitText, fmtPow10 } from './similarity-zoom.js';
 
 const TITLE_LEDGER = ['Booked exponent classes vs cycles J', 'Exponent classes vs cycles J', 'Exponent classes'];
 const TITLE_STAGES = ['Stages switched on by χ(a_j q) as q → 0', 'Stages on by χ(a_j q)', 'Stages on'];
+const LEGEND_LONG = ['mean class C_J = 6/5 + J/10', 'wave class B_J = 7/10 + J/10', 'gain per wave step: 2/5 or 2/5 − κ'];
+const LEGEND_SHORT = ['C_J = 6/5 + J/10', 'B_J = 7/10 + J/10', 'wave-step gain 2/5 (− κ)'];
 const NOTE_CHI = ['χ ≡ 1 for q ≤ 1/(2a_j): near q = 0 all cutoffs are one', 'χ ≡ 1 for q ≤ 1/(2a_j)'];
 
 const KAPPA = 1e-5;
@@ -58,13 +60,15 @@ export default {
       const leftW = Math.floor(w * 0.46);
       /* ---------- left: the ledger versus J ---------- */
       const pts = (f) => { const out = []; for (let j = 0; j <= JMAX; j++) out.push([j, f(j)]); return out; };
+      // legend labels shrink with the plot: the chart helper draws its legend unclipped
+      const legLong = fitText(ctx, [LEGEND_LONG[2], ''], leftW - 6 - 56 - 30, `11.5px ${th.sans}`) !== '', LEG = legLong ? LEGEND_LONG : LEGEND_SHORT;
       const ch = lineChart(ctx, { x: 0, y: 4, w: leftW - 6, h: H - 8 }, {
         title: fitText(ctx, TITLE_LEDGER, leftW - 6 - 56, `600 12px ${th.sans}`), xLabel: 'cycles J', yLabel: 'exponent', xDomain: [0, JMAX], yDomain: [0, 4.4], legend: 'top-left',
         series: [
-          { pts: pts((j) => 1.2 + j / 10), color: th.warn, label: 'mean class C_J = 6/5 + J/10', width: 2.5 },
-          { pts: pts((j) => 0.7 + j / 10), color: th.accent, label: 'wave class B_J = 7/10 + J/10', width: 2.5 },
-          { pts: pts((j) => 0.4), color: th.ok, dash: [5, 3], label: 'gain per wave step: 2/5 or 2/5 − κ' },
-          { pts: pts((j) => h * j / 10), color: th.numeric, dash: [2, 3], label: `physical gain h·J/10 (h = ${h.toFixed(3)})`, width: 2 },
+          { pts: pts((j) => 1.2 + j / 10), color: th.warn, label: LEG[0], width: 2.5 },
+          { pts: pts((j) => 0.7 + j / 10), color: th.accent, label: LEG[1], width: 2.5 },
+          { pts: pts((j) => 0.4), color: th.ok, dash: [5, 3], label: LEG[2] },
+          { pts: pts((j) => h * j / 10), color: th.numeric, dash: [2, 3], label: legLong ? `physical gain h·J/10 (h = ${h.toFixed(3)})` : `h·J/10 (h = ${h.toFixed(3)})`, width: 2 },
         ],
         marker: J,
       });
