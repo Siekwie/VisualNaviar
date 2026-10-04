@@ -86,7 +86,7 @@ export default {
           ctx.globalAlpha = 1;
         }
         if (lqOn < 6) { ctx.fillStyle = col; ctx.globalAlpha = 0.9; ctx.fillRect(LQ(lqOn), y + 4, LQ(6) - LQ(lqOn), rowH - 8); ctx.globalAlpha = 1; }
-        if (isOn) { const wgt = Math.pow(q, 2 * j * h); labelPill(ctx, j === 0 ? 'f₀ (uncut)' : `q^${(2 * j * h).toFixed(3)} = ${fmt.num(wgt)}`, LQ(6) - 4, y + rowH / 2, { color: th.fg, align: 'right', size: 9.5 }); }
+        if (isOn) { const wgt = Math.pow(q, 2 * j * h); labelPill(ctx, j === 0 ? 'weight 1 (slow base: f₀ uncut)' : `q^${(2 * j * h).toFixed(3)} = ${fmt.num(wgt)}`, LQ(6) - 4, y + rowH / 2, { color: th.fg, align: 'right', size: 9.5 }); }
       }
       // dyadic labels row
       const yD = bot + 6;

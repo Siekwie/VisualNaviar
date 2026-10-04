@@ -21,7 +21,7 @@ export default {
       { key: 'ratio', label: 'Force / speed', unit: '' },
       { key: 'E', label: 'Energy per unit length', unit: '× initial' },
     ]);
-    ui.slider({ label: 'Time to blowup, T − t', min: 0, max: 3, step: 0.01, value: 0, format: (v) => `10^−${v.toFixed(2)}`, onChange: (v) => { logS = v; } });
+    ui.slider({ label: 'Time to blowup, T − t', min: 0, max: 3, step: 0.01, value: 0, format: (v) => (v < 0.005 ? '1 (start)' : `10^−${v.toFixed(2)}`), onChange: (v) => { logS = v; } });
     ui.slider({ label: 'Speed exponent α', min: 0.1, max: 1.5, step: 0.05, value: a, onChange: (v) => { a = v; } });
     ui.slider({ label: 'Width exponent β', min: 0.1, max: 1.5, step: 0.05, value: b, onChange: (v) => { b = v; } });
     ui.slider({ label: 'Viscosity ν', min: 0, max: 0.3, step: 0.005, value: nu, onChange: (v) => { nu = v; } });
@@ -59,12 +59,12 @@ export default {
       const half = w / 2;
       const xLabel = similarity ? 'ρ = r / w(t)' : 'r  (units of the initial core width)';
       lineChart(ctx, { x: 0, y: 4, w: half - 4, h: h - 8 }, {
-        title: 'The proposed swirl  v_θ(r, t)', xLabel, yLabel: 'speed', yDomain: [0, Math.max(1.2, U * 1.08)], xDomain: [0, rmax],
+        title: 'The proposed swirl, v_θ(r, t)', xLabel, yLabel: 'speed', yDomain: [0, Math.max(1.2, U * 1.08)], xDomain: [0, rmax],
         series: [{ pts: vel, color: th.accent, label: `v_θ  (peak ${fmt.num(U)})` }], legend: 'top-right',
       });
       const fscale = Math.max(1, Fmax * 1.08);
       lineChart(ctx, { x: half + 4, y: 4, w: half - 4, h: h - 8 }, {
-        title: 'What force the equation demands  f_θ(r, t)', xLabel, yLabel: 'force', yDomain: [-fscale, fscale], xDomain: [0, rmax],
+        title: 'Force the equation demands, f_θ(r, t)', xLabel, yLabel: 'force', yDomain: [-fscale, fscale], xDomain: [0, rmax],
         series: [
           { pts: force, color: th.bad, label: `required force (peak ${fmt.num(Fmax)})` },
           { pts: inertia, color: th.warn, dash: [5, 3], label: 'from ∂ₜv (inertia)' },

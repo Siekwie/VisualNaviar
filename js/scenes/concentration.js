@@ -31,7 +31,7 @@ export default {
     ]);
     const sl = {};
     const sync = () => { sl.a.set(a, false); sl.bw.set(bw, false); sl.bl.set(bl, false); };
-    sl.t = ui.slider({ label: 'Time to blowup, T − t', min: 0, max: 4, step: 0.01, value: 0, format: (v) => `10^−${v.toFixed(2)}`, onChange: (v) => { logS = v; } });
+    sl.t = ui.slider({ label: 'Time to blowup, T − t', min: 0, max: 4, step: 0.01, value: 0, format: (v) => (v < 0.005 ? '1 (start)' : `10^−${v.toFixed(2)}`), onChange: (v) => { logS = v; } });
     const applyConstruction = () => { a = 0.5 + hh; bw = 0.5; bl = 0.5 - hh; sync(); };
     const presetSel = ui.select({
       label: 'Scaling preset', value: p.preset,
@@ -43,6 +43,9 @@ export default {
     sl.bw = ui.slider({ label: 'Width exponent β_w  (w ∝ (T−t)^β_w)', min: 0.05, max: 1.5, step: 0.05, value: bw, onChange: (v) => { bw = v; presetSel.select.value = 'custom'; } });
     sl.bl = ui.slider({ label: 'Length exponent β_L  (L ∝ (T−t)^β_L)', min: 0, max: 1.5, step: 0.05, value: bl, onChange: (v) => { bl = v; presetSel.select.value = 'custom'; } });
     ui.toggle({ label: 'Play: approach the blowup time', value: false, onChange: (v) => { playing = v; if (v && logS >= 3.99) logS = 0; } });
+    const expWraps = [sl.a, sl.bw, sl.bl].map((x) => x.input.closest('.ctl'));
+    expWraps.forEach((el) => { el.hidden = true; });
+    ui.toggle({ label: 'Show the three exponent sliders (α, β_w, β_L)', value: false, hint: 'Change them to leave the presets and build your own scaling.', onChange: (v) => expWraps.forEach((el) => { el.hidden = !v; }) });
     ui.note('<b>Formula-derived.</b> Core energy = U²·w²·L, velocity gradient ≈ U / w, enstrophy ≈ (U/w)²·w²·L, all up to constants. The “construction” preset uses the exponents of the Lean formalization: axis speed ∝ (1−t)^−(½+h), radial width ∝ (1−t)^½, axial length ∝ (1−t)^(½−h), with 0 &lt; h ≤ 1/1000 (the slider exaggerates h so the anisotropy is visible). The “natural scaling” preset is the scaling symmetry of Navier–Stokes (Leray).');
 
     const draw = () => {
@@ -77,7 +80,7 @@ export default {
         ctx.beginPath(); ctx.arc(cx + Math.cos(q.ang) * q.r * rw, cy + Math.sin(q.ang) * q.r * rw, q.r < 1.7 ? 1.5 : 1, 0, Math.PI * 2); ctx.fill();
       }
       ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, 1.7 * rw, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
-      labelPill(ctx, 'top view · dashed ring = shear annulus', 8, h - 14, { color: th.muted, size: 10.5 });
+      labelPill(ctx, 'top view · dashed ring = shear annulus (chapter 2 calls it the active annulus)', 8, h - 14, { color: th.muted, size: 10.5 });
       labelPill(ctx, `T − t = ${s.toExponential(1)}`, 8, 16, { color: th.fg });
       labelPill(ctx, `w = ${wd.toFixed(3)}   L = ${L.toFixed(3)}   U = ${fmt.num(U)}`, 8, 36, { color: th.muted, size: 11 });
       // inset: side view of the core, width ∝ w, length ∝ L

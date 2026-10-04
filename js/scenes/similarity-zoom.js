@@ -5,6 +5,8 @@
 //   A = 1/2 + h,  D = 1/2 − h                                            (CoordinateAlgebra.A, .D)
 //   base axis speed  |u(t, 0)| = j · (1 − t)^{−A}                          (FinalSlowBase.origin)
 //   core X < X_L, active annulus X_L ≤ X ≤ X_R, exterior X > X_R         (FinalSlowBase.annulus, ActualPolarCoverage.active)
+//   outside the annulus only the slow base remains (ActualCandidateAssembly.exteriorStages); the pure-heat identity
+//   is proved for X >= outerEdge = max(X_L, X_R, nominalExteriorRadius) + 1 and q < q*  (LocalPaperDomain.outerEdge, LocalPaper.Properties.exterior)
 // The Lean leaves h, j, X_L (= 4/scale) and X_R (= radius·exp(tailEnd)) abstract; here they are sliders, and h is
 // deliberately exaggerated for visibility (the Lean's SmallParameters has h ≤ 1/1000). The flow pattern is schematic.
 import { theme, labelPill, fmt } from '../scene-runtime.js';
@@ -42,7 +44,7 @@ export default {
     ui.slider({ label: 'Annulus edge X_R (illustrative; Lean: radius·e^tailEnd)', min: 1, max: 8, step: 0.1, value: XR, onChange: (v) => { XR = Math.max(v, XL + 0.1); } });
     ui.toggle({ label: 'Zoom the physical panel with the collapse (r ∝ √(1−t), z ∝ (1−t)^(1/2−h))', value: false, onChange: (v) => { zoom = v; } });
     ui.toggle({ label: 'Play: approach t = 1', value: false, onChange: (v) => { playing = v; if (v && logS >= 2.99) logS = 0; } });
-    ui.note('<b>Formula-derived.</b> $q$ solves $q - z^2 q^{2h} = 1-t$; $X = r^2/(2q)$, $\\eta = z/q^{(1-2h)/2}$; the axis speed is $j\\,(1-t)^{-(1/2+h)}$; the three regions are $X \\lt X_L$ (core), $X_L \\le X \\le X_R$ (active annulus), $X \\gt X_R$ (exterior). The slider $h$ is exaggerated for visibility and $X_L, X_R, j$ are abstract in the Lean. The swirl and meridional arrows are schematic.');
+    ui.note('<b>Formula-derived.</b> $q$ solves $q - z^2 q^{2h} = 1-t$; $X = r^2/(2q)$, $\\eta = z/q^{(1-2h)/2}$; the axis speed is $j\\,(1-t)^{-(1/2+h)}$; the three regions are $X \\lt X_L$ (core), $X_L \\le X \\le X_R$ (active annulus), $X \\gt X_R$ (exterior: only the base remains; the pure heat identity holds beyond $X_{\\mathrm{ext}} \\ge X_R + 1$, not drawn). The slider $h$ is exaggerated for visibility and $X_L, X_R, j$ are abstract in the Lean. The swirl and meridional arrows are schematic.');
 
     const draw = () => {
       const { ctx, w, hgt } = { ctx: c.ctx, w: c.w, hgt: c.h }; const th = theme();
@@ -102,7 +104,7 @@ export default {
       labelPill(ctx, `t = ${t.toFixed(3)}   q(z=0) = 1 − t = ${tau.toExponential(2)}`, px.x + 4, px.y + 14, { color: th.fg, size: 10.5 });
       labelPill(ctx, 'core (X < X_L)', px.x + px.w - 6, px.y + 14, { color: th.accent, size: 10, align: 'right' });
       labelPill(ctx, 'active annulus (X_L ≤ X ≤ X_R)', px.x + px.w - 6, px.y + 32, { color: th.warn, size: 10, align: 'right' });
-      labelPill(ctx, 'exterior (heat), X > X_R', px.x + px.w - 6, px.y + 50, { color: th.muted, size: 10, align: 'right' });
+      labelPill(ctx, 'exterior (X > X_R): base only; pure heat beyond X_ext', px.x + px.w - 6, px.y + 50, { color: th.muted, size: 10, align: 'right' });
       labelPill(ctx, 'arrows: swirl + meridional stream, schematic', px.x + 4, px.y + px.h - 12, { color: th.muted, size: 9.5 });
       /* ---------- right: similarity plane (X, η) — frozen in time ---------- */
       const Xmax = XR * 1.35;
@@ -131,7 +133,7 @@ export default {
       ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText('X_L', SX(XL), sx.y + sx.h + 2); ctx.fillText('X_R', SX(XR), sx.y + sx.h + 2);
       labelPill(ctx, 'core: base only, blowup here', SX(0) + 4, sx.y + 14, { color: th.accent, size: 10 });
       labelPill(ctx, 'annulus: all corrections', SX(XL) + 4, sx.y + 34, { color: th.warn, size: 10 });
-      labelPill(ctx, 'exterior', SX(XR) + 4, sx.y + 14, { color: th.muted, size: 10 });
+      labelPill(ctx, 'exterior: base only', SX(XR) + 4, sx.y + 14, { color: th.muted, size: 10 });
     };
     ui.loop((dt) => {
       if (playing) { logS = Math.min(3, logS + dt * 0.45); sT.set(logS, false); if (logS >= 3) playing = false; }

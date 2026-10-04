@@ -49,7 +49,7 @@ function expand(html) {
 }
 
 /* ---------- Top bar ---------- */
-const SHORT = { concentration: 'Peak speed vs energy', 'navier-stokes': 'Navier–Stokes', euler: 'Euler', verification: 'What Lean checked', implications: 'Implications' };
+const SHORT = { concentration: 'Peak speed, finite energy', 'navier-stokes': 'Navier–Stokes construction', euler: 'Euler construction', verification: 'What Lean verified', implications: 'Implications' };
 function renderTopbar(active) {
   const nav = $('#chapter-nav');
   nav.innerHTML = chapters.map((c) => `<a href="#/${c.id}" class="eq-${c.equation} ${active && active.ch === c ? 'active' : ''}" title="${esc(c.title)} — ${esc(c.summary)}"><span class="num">${c.number}</span>${esc(c.short || SHORT[c.id] || c.title)}</a>`).join('');
@@ -85,18 +85,18 @@ function renderTrail(entry) {
   }).join('');
   t.innerHTML = `
     <h2>Where are we?</h2>
-    <div class="where"><strong>${esc(entry.ch.title)}</strong>Scene ${entry.i + 1} of ${entry.ch.scenes.length} · ${esc(entry.sc.title)}</div>
+    <div class="where"><strong>${esc(entry.ch.title)}</strong>Scene ${entry.i + 1} of ${entry.ch.scenes.length} · ${esc(entry.sc.title)}<span class="sum">${esc(entry.ch.summary)}</span></div>
     <h2>Question trail</h2>
     <ol>${list}</ol>
     <div class="prevnext">
-      ${prev ? `<a href="#/${prev.ch.id}/${prev.sc.id}"><span>What came before</span><strong>${esc(prev.sc.question)}</strong></a>` : ''}
-      ${next ? `<a href="#/${next.ch.id}/${next.sc.id}"><span>What comes next</span><strong>${esc(next.sc.question)}</strong></a>` : '<a href="#/"><span>End of trail</span><strong>Back to the overview</strong></a>'}
+      ${prev ? `<a href="#/${prev.ch.id}/${prev.sc.id}"><span>What came before${prev.ch !== entry.ch ? ` · Chapter ${prev.ch.number}` : ''}</span><strong>${esc(prev.sc.question)}</strong></a>` : ''}
+      ${next ? `<a href="#/${next.ch.id}/${next.sc.id}"><span>What comes next${next.ch !== entry.ch ? ` · Chapter ${next.ch.number}` : ''}</span><strong>${esc(next.sc.question)}</strong></a>` : '<a href="#/"><span>End of trail</span><strong>Back to the overview</strong></a>'}
     </div>
     <div class="legend">
       <h2>Evidence labels</h2>
       ${Object.entries(LABELS).map(([k, v]) => `<div><span class="badge ${k}" title="${esc(v.blurb)}">${v.name}</span></div>`).join('')}
     </div>
-    <div class="kbd-hint"><kbd>←</kbd> <kbd>→</kbd> move between scenes · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> change depth</div>`;
+`;
 }
 
 /* ---------- Stage (visual) ---------- */
@@ -125,19 +125,22 @@ function renderStage(entry) {
       <h1>${esc(sc.title)}</h1>
       <p class="question">${esc(sc.question)}</p>
     </div>
+    <button type="button" class="mobile-jump" id="mobile-jump">Read the explanation ↓</button>
     <div class="scene-card">
       <div class="scene-bar"><span class="title">${esc(sc.visual?.caption || 'Interactive scene')}</span><span class="badge ${label}" title="${esc(L.blurb)}">${L.name}</span></div>
       <div class="scene-host" id="scene-host"></div>
     </div>
     ${sc.status ? `<div class="status-strip">
-      <div class="status changes"><b>What changes</b>${expand(sc.status.changes)}</div>
-      <div class="status bounded"><b>What stays bounded</b>${expand(sc.status.bounded)}</div>
-      <div class="status fails"><b>What fails</b>${expand(sc.status.fails)}</div>
+      <div class="status changes" title="What grows or blows up in this scene"><b>What changes</b>${expand(sc.status.changes)}</div>
+      <div class="status bounded" title="What the argument keeps under control"><b>What stays bounded</b>${expand(sc.status.bounded)}</div>
+      <div class="status fails" title="What this scene cannot yet deliver, which the next scene addresses"><b>What fails</b>${expand(sc.status.fails)}</div>
     </div>` : ''}
     <div class="scene-nav">
-      ${prev ? `<a href="#/${prev.ch.id}/${prev.sc.id}" class="prev">← <span><span class="lbl">Before</span><br>${esc(prev.sc.title)}</span></a>` : '<span></span>'}
-      ${next ? `<a href="#/${next.ch.id}/${next.sc.id}" class="next"><span><span class="lbl">Next</span><br>${esc(next.sc.title)}</span> →</a>` : ''}
-    </div>`;
+      ${prev ? `<a href="#/${prev.ch.id}/${prev.sc.id}" class="prev">← <span><span class="lbl">Before${prev.ch !== ch ? ` · Chapter ${prev.ch.number}` : ''}</span><br>${esc(prev.sc.title)}</span></a>` : '<span></span>'}
+      ${next ? `<a href="#/${next.ch.id}/${next.sc.id}" class="next"><span><span class="lbl">Next${next.ch !== ch ? ` · Chapter ${next.ch.number}` : ''}</span><br>${esc(next.sc.title)}</span> →</a>` : ''}
+    </div>
+    <div class="kbd-hint"><kbd>←</kbd> <kbd>→</kbd> move between scenes · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> change depth</div>`;
+  $('#mobile-jump')?.addEventListener('click', () => $('#explain').scrollIntoView({ behavior: 'smooth', block: 'start' }));
   mountVisual(entry);
   typeset($('#stage'));
 }
@@ -161,11 +164,11 @@ function renderExplain(entry) {
   if (window.innerWidth > 820) ex.scrollTop = 0;
 }
 function stageBlock(st) {
-  return `<h3>This stage in four questions</h3><div class="stage-questions">
+  return `<details class="more stagebox"><summary>This step in four questions <span class="sub">· need · gap · new ingredient · what remains</span></summary><div class="stage-questions">
     <div><b>What do we need?</b>${expand(st.need)}</div>
     <div><b>Why doesn't the previous step provide it?</b>${expand(st.whyNot)}</div>
     <div><b>What new ingredient fixes that?</b>${expand(st.ingredient)}</div>
-    <div><b>What still needs proving?</b>${expand(st.remaining)}</div></div>`;
+    <div><b>What still needs proving?</b>${expand(st.remaining)}</div></div></details>`;
 }
 function srcLine(ref) {
   const s = SOURCES[ref.src];
@@ -198,18 +201,19 @@ function renderHome() {
       <div>
         <h1>${home.title}</h1>
         <p class="lede">${home.lede}</p>
+        <p class="depths-line">Every scene has three depths: <b>Understand</b> · <b>Inspect</b> · <b>Verify</b>. Switch with the tabs or the keys 1, 2, 3.</p>
         <div class="cta">
           <a class="btn primary" href="#/${chapters[0].id}">Start the guided trail →</a>
-          <a class="btn" href="#/verification">Jump to the Lean statements</a>
+          <a class="btn" href="#/concentration/what-is-claimed?depth=verify">Jump to the Lean statements</a>
         </div>
       </div>
       <div class="hero-visual"><canvas id="hero-canvas" aria-label="Animated schematic of a contracting vortex core"></canvas><div class="cap"><span>A core that shrinks while its speed grows. The whole site is about when, and whether, this picture becomes mathematics.</span><span class="badge schematic" title="${esc(LABELS.schematic.blurb)}">Schematic</span></div></div>
     </section>
     <h2>First: two separate results</h2>
     <p style="color:var(--fg-muted);max-width:70ch">${home.compareIntro}</p>
-    <table class="compare"><thead><tr><th></th><th>Navier–Stokes (forced)</th><th>Euler (unforced)</th></tr></thead><tbody>
+    <div class="table-wrap"><table class="compare"><thead><tr><th></th><th>Navier–Stokes (forced)</th><th>Euler (unforced)</th></tr></thead><tbody>
       ${home.compare.map((r) => `<tr><td>${expand(r.k)}</td><td class="ns">${expand(r.ns)}</td><td class="eu">${expand(r.euler)}</td></tr>`).join('')}
-    </tbody></table>
+    </tbody></table></div>
     <h2>The trail</h2>
     <div class="chapter-grid">
       ${chapters.map((c) => `<a class="chapter-card" href="#/${c.id}"><span class="eq-tag ${c.equation}">${{ ns: 'Navier–Stokes', euler: 'Euler', both: 'Both', meta: 'Context' }[c.equation]}</span><div class="num">Chapter ${c.number}</div><h3>${esc(c.title)}</h3><p>${esc(c.summary)}</p><div class="count">${c.scenes.length} scene${c.scenes.length === 1 ? '' : 's'}</div></a>`).join('')}
@@ -219,6 +223,7 @@ function renderHome() {
       <div><h3>Understand</h3><p>Plain language and a visual intuition. Enough to follow the storyline.</p></div>
       <div><h3>Inspect</h3><p>The equations and estimates, and why each step works.</p></div>
       <div><h3>Verify</h3><p>Precise statements, paper references, Lean declarations at a pinned commit, and the limits of each scene.</p></div>
+      <div><h3>The strip under each scene</h3><p><b>What changes</b> is what grows or blows up. <b>What stays bounded</b> is what the argument controls. <b>What fails</b> is what the scene cannot yet deliver, which the next scene addresses.</p></div>
       ${Object.entries(LABELS).map(([k, v]) => `<div><h3><span class="badge ${k}">${v.name}</span></h3><p>${esc(v.blurb)}</p></div>`).join('')}
     </div>
     <p class="fine">${home.fine}</p>`;
@@ -265,10 +270,8 @@ function drawHero() {
     // annulus
     ctx.strokeStyle = th.faint; ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, 1.7 * rw, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     // captions
-    labelPill(ctx, `core width ∝ (T−t)^½  →  ${width.toFixed(3)}`, 10, 16, { color: th.fg });
-    labelPill(ctx, `peak speed ∝ (T−t)^−½  →  ${speed.toFixed(1)}×`, 10, 36, { color: th.bad });
-    labelPill(ctx, `core energy ∝ speed² × volume  →  ${(speed * speed * Math.pow(width, 3)).toFixed(3)}×`, 10, 56, { color: th.ok });
-    labelPill(ctx, 'T − t = ' + s.toExponential(1), w - 10, h - 14, { color: th.muted, align: 'right' });
+    labelPill(ctx, 'a core that shrinks while it spins faster', 10, 16, { color: th.fg });
+    labelPill(ctx, 'dashed ring: the shear annulus around it', 10, 36, { color: th.muted, size: 11 });
     raf = requestAnimationFrame(frame);
   };
   raf = requestAnimationFrame(frame);
@@ -279,6 +282,7 @@ function drawHero() {
 function route() {
   const r = parseHash();
   renderTopbar(r.entry);
+  document.documentElement.dataset.view = r.home ? 'home' : 'scene';
   if (r.home) { current = null; if (mounted) { try { mounted.instance?.destroy?.(); } catch { /* */ } mounted.ui.dispose(); mounted = null; } renderHome(); document.title = 'Blowup Explorer — finite-time singularities in Navier–Stokes and Euler'; window.scrollTo(0, 0); return; }
   if (heroStop) { heroStop(); heroStop = null; }
   $('#home').hidden = true; $('#layout').hidden = false;

@@ -64,7 +64,7 @@ export default {
       ctx.fillStyle = 'rgba(255,255,255,.85)';
       for (const q of parts) { const vth = (1 - Math.exp(-q.r * q.r)) / Math.max(q.r, 0.05); const om = Math.min(6, vth * Math.min(wmax, 40) * 0.12); q.a += om * dt * 3; ctx.beginPath(); ctx.arc(cx + Math.cos(q.a) * q.r * rpx, cy + Math.sin(q.a) * q.r * rpx, 1.4, 0, Math.PI * 2); ctx.fill(); }
       labelPill(ctx, `t = ${t.toFixed(2)}${growing ? `   T − t = ${(T - t).toExponential(1)}` : ''}`, 8, 16, { color: th.fg });
-      labelPill(ctx, 'cross-section · arrows: inflow of the strain · tube axis points at you', 8, h - 14, { color: th.muted, size: 10.5 });
+      labelPill(ctx, 'cross-section · arrows: strain inflow · axis toward you', 8, h - 14, { color: th.muted, size: 10.5 });
       ctx.restore();
       // right: chart
       lineChart(ctx, { x: leftW + 6, y: 6, w: w - leftW - 10, h: h - 12 }, {

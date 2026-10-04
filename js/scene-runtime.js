@@ -57,18 +57,20 @@ export function makeUI(host) {
     host, canvasWrap, controls,
 
     /** Create a DPR-aware canvas with a fixed aspect ratio. Returns {canvas, ctx, w, h, onResize}. */
-    canvas({ aspect = 16 / 9, maxHeight = 520, minHeight = 240 } = {}) {
+    /** minWidth: below this logical width the canvas keeps its size and the card scrolls sideways (phones). */
+    canvas({ aspect = 16 / 9, maxHeight = 520, minHeight = 240, minWidth = 460 } = {}) {
       const canvas = document.createElement('canvas');
       canvasWrap.appendChild(canvas);
       const ctx = canvas.getContext('2d');
       const state = { canvas, ctx, w: 0, h: 0, dpr: 1, _cbs: [] };
       const resize = () => {
-        const cw = Math.max(200, canvasWrap.clientWidth || host.clientWidth || 600);
+        const avail = canvasWrap.clientWidth || host.clientWidth || 600;
+        const cw = Math.max(minWidth, avail);
         const ch = Math.min(maxHeight, Math.max(minHeight, cw / aspect));
         const dpr = Math.min(2, window.devicePixelRatio || 1);
         state.w = cw; state.h = ch; state.dpr = dpr;
         canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr);
-        canvas.style.height = `${ch}px`;
+        canvas.style.width = `${cw}px`; canvas.style.height = `${ch}px`;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         state._cbs.forEach((cb) => cb(state));
       };
