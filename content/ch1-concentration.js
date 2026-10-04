@@ -14,14 +14,14 @@ export default {
       visual: { scene: 'concentration', label: 'formula-derived', caption: 'A contracting core: speed up, size down, energy on a ledger', params: { preset: 'leray' } },
       status: {
         changes: 'The fastest speed anywhere, and the velocity gradient across the core, grow without bound as $t \\to T$.',
-        bounded: 'The energy stored in the core, speed$^2$ \u00d7 volume, whenever the core shrinks fast enough to pay for the speed.',
+        bounded: 'The energy stored in the core, speed$^2$ \u00d7 volume, when the core shrinks fast enough. In the construction it goes to zero.',
         fails: 'Nothing yet. This is bookkeeping, not an equation. The picture does not know it has to satisfy Navier\u2013Stokes.',
       },
       understand: `
 <p>Kinetic energy is not the same thing as speed. Energy adds up motion over the <em>whole</em> fluid; speed is the motion at a single point. A tiny region can move extremely fast and still contribute almost nothing to the total, because the total is weighted by volume.</p>
 <p>So imagine a small core of fluid that spins faster and faster while it shrinks. Its energy is roughly</p>
 <p>$$E_{\\text{core}} \;\\approx\; (\\text{characteristic speed})^2 \\times (\\text{core volume}).$$</p>
-<p>If the volume collapses faster than the squared speed grows, the energy in the core stays bounded, or even goes to zero, while the peak speed heads to infinity. Drag the time slider toward the blowup time and watch the two readouts separate.</p>
+<p>If the volume collapses faster than the squared speed grows, the energy in the core stays bounded, or even goes to zero, while the peak speed heads to infinity. Drag the time slider toward the blowup time and watch the two readouts separate. The default preset uses the construction\u2019s own exponents.</p>
 <div class="callout key"><b class="tag">Label this carefully</b>This is the <strong>concentration intuition</strong>. It explains why infinite speed and finite energy are not contradictory. It does not explain why the fluid would do this, and it says nothing about the energy outside the core. In the proof, bounding the energy of the <em>whole</em> solution is a separate argument.</div>`,
       inspect: `
 <p>Write $s = T - t$ for the time left before the blowup, and suppose the core has width $w(s)$, length $L(s)$ and characteristic speed $U(s)$, all power laws:</p>
@@ -33,8 +33,8 @@ export default {
 <p>The Navier\u2013Stokes equations have a scaling symmetry: if $u(x,t)$ solves them, so does $\\lambda\\,u(\\lambda x, \\lambda^2 t)$ for every $\\lambda \\gt 0$. A solution that reproduces itself under this symmetry as it approaches $T$ has the form</p>
 <p>$$u(x,t) = \\frac{1}{\\sqrt{T-t}}\; \\mathbf{U}\\!\\left(\\frac{x}{\\sqrt{T-t}}\\right),$$</p>
 <p>which is the preset \u201cnatural scaling\u201d: $\\alpha = \\beta_w = \\beta_L = \\tfrac12$. Its core energy scales like $s^{1/2} \\to 0$. Leray showed in 1934 that if a solution of the unforced equation breaks down at time $T$, its peak speed must grow at least like $(T-t)^{-1/2}$; the natural scaling is the slowest allowed blowup.</p>
-<details class="more"><summary>Isotropic versus slender</summary>
-<p>Press descriptions of the construction speak of a vortex whose <em>radial width decreases faster than its axial length</em>, with inward spiralling and axial outflow. In the ledger that is $\\beta_w \\gt \\beta_L$: the core becomes a thin, long filament. The \u201cslender core\u201d preset illustrates the shape of such bookkeeping; its exponents are illustrative, not taken from the paper. The scene shows what every such choice implies for energy, gradient and enstrophy.</p></details>
+<details class="more"><summary>The construction\u2019s exponents</summary>
+<p>The Lean formalization fixes the scaling explicitly. Its similarity coordinate $q$ solves $q - z^2 q^{2h} = 1 - t$ (so $q = 1-t$ on the symmetry plane), the radial variable is held fixed as $X = r^2/(2q)$, the axial one as $\\eta = z / q^{(1-2h)/2}$, and on the axis the base velocity is exactly $|u(t,0)| = j\\,(1-t)^{-(1/2+h)}$ with constants $0 \\lt h \\le 1/1000$ and $0 \\lt j \\le 1/1000$. In the ledger\u2019s language: $\\alpha = \\tfrac12 + h$, $\\beta_w = \\tfrac12$, $\\beta_L = \\tfrac12 - h$. The width shrinks slightly faster than the length and the speed grows slightly faster than Leray\u2019s rate, so the core energy exponent is $\\tfrac12 - 3h \\gt 0$ and the core energy tends to zero. The scene exaggerates $h$ so the anisotropy is visible.</p></details>
 <details class="more"><summary>What the whole-solution energy bound has to handle</summary>
 <p>Three things live outside this heuristic: the shear annulus around the core, where the velocity drops from its peak to the background; the far field, which must decay fast enough to be square-integrable; and the work done by the external force, which can pump energy in. The statement that the solution has uniformly bounded kinetic energy on $[0,T)$ must control all three. The scene only displays the first term.</p></details>`,
       verify: {
@@ -44,11 +44,15 @@ export default {
           { title: 'Leray\u2019s lower bound (classical, unforced equation)', html: '<p>If a smooth solution of the unforced Navier\u2013Stokes equations on $\\R^3$ first loses regularity at time $T$, then $\\norm{u(t)}_{\\Linf} \\ge c\\,\\nu^{1/2}\\,(T-t)^{-1/2}$ for $t \\lt T$. This fixes $\\alpha \\ge \\tfrac12$ as the slowest possible blowup of the peak speed.</p>' },
         ],
         paper: [
-          { src: 'ns-paper', where: 'Main theorem (Theorem 1.1 per formalization.yaml)', note: 'The paper is the source for the specific scaling of the constructed vortex. Its exponents are not reproduced here because the PDF could not be read in this environment; the ledger uses the natural scaling and illustrative presets.' },
+          { src: 'ns-paper', where: 'Theorem 1.1 (per formalization.yaml)', note: 'The paper is the primary source for the construction; its exponents are taken here from the Lean formalization, not from a reading of the PDF.' },
         ],
         lean: [
           { decl: 'NavierStokes.Comparator.NavierStokesExistenceAndSmoothnessRn', file: 'ComparatorChallenges/NavierStokes.lean', line: 245, note: 'The whole-space solution class: smooth, divergence-free, square-integrable at each time, and uniformly bounded energy (line 253).' },
           { decl: 'NavierStokes.Comparator.navier_stokes_breakdown_R3', file: 'NavierStokes/ComparatorSolution.lean', line: 16, note: 'For every \u03bd \u003e 0 there are smooth decaying data and force with no global smooth bounded-energy solution.' },
+          { decl: 'CoordinateAlgebra.A / CoordinateAlgebra.D', file: 'NavierStokes/CoordinateAlgebra.lean', line: 18, note: 'A h = 1/2 + h (velocity exponent) and D h = 1/2 \u2212 h.' },
+          { decl: 'SimilarityCoordinates.forwardScalar', file: 'NavierStokes/SimilarityCoordinates.lean', line: 22, note: 'q \u2212 z\u00b2 q^a with a = 2h; the module docstring (lines 11\u201312) states that q is its unique positive solution equal to 1 \u2212 t.' },
+          { decl: 'FinalSlowBase.origin', file: 'NavierStokes/FinalSlowBase.lean', line: 361, note: 'On the axis the base velocity equals ((1 \u2212 t)^(\u2212A h) \u00b7 j) e\u2082 exactly.' },
+          { decl: 'NaturalAxisData.SmallParameters', file: 'NavierStokes/NaturalAxisData.lean', line: 41, note: '0 \u003c h \u2264 1/1000 and 0 \u003c j \u2264 1/1000.' },
         ],
         context: [
           { src: 'openai-x', note: 'OpenAI\u2019s description of the solution as a vortex that \u201cspirals inward and gets increasingly elongated\u201d.' },
@@ -56,7 +60,7 @@ export default {
         ],
         limits: [
           'The scene computes power laws, not solutions. No fluid equation is solved here.',
-          'The slender-core exponents are illustrative. The paper\u2019s actual scaling is cited but not reproduced.',
+          'The construction preset exaggerates $h$ (the slider starts at 0.05; the Lean requires $h \\le 1/1000$). The \u201cslender core\u201d preset is purely illustrative.',
           'Energy outside the core (shear annulus, far field) and the work done by the force are not shown; the uniform energy bound of the real solution is a separate estimate in the paper.',
           'The Leray lower bound is stated for the unforced equation; with a force the constant depends on the force as well.',
         ],
@@ -74,9 +78,9 @@ export default {
         fails: 'Smoothness of the force. The theorem needs $f$ smooth for all $t \\ge 0$, through and beyond $T$. An infinite force is not allowed.',
       },
       understand: `
-<p>Here is the uncomfortable truth behind every forced blowup result: <strong>any</strong> smooth divergence-free velocity field is a solution of Navier\u2013Stokes with <em>some</em> force. Plug the field into the equation; whatever is left unbalanced, call it the force. A shrinking vortex animation is therefore always \u201ca solution\u201d. The entire content of the theorem is in the quality of the force: it must be smooth, decay, and stay smooth through the moment the velocity becomes infinite.</p>
+<p>Here is the uncomfortable truth behind every forced blowup result: <strong>any</strong> smooth divergence-free velocity field solves Navier\u2013Stokes with <em>some</em> force. Plug the field into the equation; whatever is left unbalanced, call it the force. A shrinking vortex animation is therefore always \u201ca solution\u201d. The whole content of the theorem is the quality of the force: smooth, decaying, and still smooth at the moment the velocity becomes infinite.</p>
 <p>The leftover is called the <strong>residual</strong>. The scene computes it for the simplest contracting vortex, a flat swirl told to shrink on schedule. The required force grows even faster than the velocity. It blows up. So this flow solves the equations, but with a singular force, and that proves nothing.</p>
-<p>In this toy the fluid has no way to speed itself up: the pressure balances the spinning exactly and nothing else happens. A real construction needs the fluid\u2019s own nonlinear term to do the amplifying, so that the force only has to patch a mismatch. The next chapter is about making that mismatch smooth.</p>`,
+<p>In this toy the fluid cannot speed itself up: the pressure balances the spinning exactly and nothing else happens. A real construction needs the fluid\u2019s own nonlinear term to do the amplifying, so the force only patches a mismatch. The Lean formalization does exactly this: the force is <em>defined</em> as the residual. The next chapter is about making that residual smooth.</p>`,
       inspect: `
 <p>Write the incompressible Navier\u2013Stokes equations as</p>
 <p>$$\\partial_t u + (u\\cdot\\nabla)u - \\nu\\Delta u + \\nabla p = f, \\qquad \\nabla\\cdot u = 0.$$</p>
@@ -91,6 +95,8 @@ export default {
 <p>The first term comes from the time derivative and grows like $s^{-\\alpha-1}$, one full power faster than the speed. The viscous term grows like $s^{-\\alpha-2\\beta}$. Either way, $\\max|f_\\theta| \\to \\infty$ as $s \\to 0$. Switch on the similarity coordinate $\\rho = r/w(t)$: the velocity profile freezes, the force does not.</p>
 <h3>Why the toy cannot help itself</h3>
 <p>A planar swirl has no vortex stretching. In two dimensions vorticity is only transported and diffused, which is why two-dimensional Navier\u2013Stokes is globally regular. Growth has to come from the three-dimensional term $(\\omega\\cdot\\nabla)u$, which tilts and stretches vortex lines. Press descriptions of the construction match this: inward spiralling combined with axial outflow, so that the contracting core is stretched along its axis and the shear in the surrounding annulus is strengthened by the flow itself.</p>
+<details class="more"><summary>The formalization takes the residual literally</summary>
+<p>In the Lean development the physical residual is a definition, <code>navierStokesResidual u p = \u2202\u209c u + (u\u00b7\u2207)u \u2212 \u0394u + \u2207p</code>, and the force of the final solution is <em>defined</em> as this residual of the constructed fields for $t \\lt 1$, then extended smoothly across $t = 1$ by matching all of its time derivatives (a Borel-type extension). So \u201cthe force is smooth\u201d is the same statement as \u201cevery derivative of the residual has a limit as $t \\to 1^-$\u201d, which is what the construction must achieve. The fluid also starts from rest: $u = 0$ for $|t| \\le 3/8$, and the force creates the whole flow.</p></details>
 <details class="more"><summary>What \u201csmooth force\u201d means in the Clay formulation</summary>
 <p>The official problem description, and its Lean transcription, require the force to be $C^\\infty$ on $\\R^3 \\times [0,\\infty)$ and to satisfy, for every derivative order $m$ and every rate $K$, a bound $\\|\\partial^m_{x,t} f(x,t)\\| \\le C/(1+|x|+t)^K$. In words: infinitely smooth in space and time, decaying faster than any polynomial, for all time, with no exception at the blowup time.</p></details>`,
       verify: {
@@ -106,6 +112,9 @@ export default {
           { decl: 'NavierStokes.Comparator.ForceConditionDecay', file: 'ComparatorChallenges/NavierStokes.lean', line: 185, note: 'Smooth on \u211d\u00b3 \u00d7 [0,\u221e) with faster-than-polynomial decay of every derivative in space and time.' },
           { decl: 'NavierStokes.Comparator.ForceConditionPeriodic', file: 'ComparatorChallenges/NavierStokes.lean', line: 200, note: 'The periodic counterpart used for alternative (D).' },
           { decl: 'NavierStokes.Comparator.NavierStokesExistenceAndSmoothness', file: 'ComparatorChallenges/NavierStokes.lean', line: 217, note: 'The equation itself, as transcribed in Lean: the field navier_stokes at line 222.' },
+          { decl: 'ProblemStatement.navierStokesResidual', file: 'NavierStokes/ProblemStatement.lean', line: 82, note: 'The residual as a definition: \u2202\u209c u + advection \u2212 Laplacian + pressure gradient, at viscosity one.' },
+          { decl: 'CandidateFromLimits.force', file: 'NavierStokes/CandidateFromLimits.lean', line: 82, note: 'The force of the constructed solution is the smooth extension of the traced residual; force_eq_activated_residual (line 108) says it equals the residual for 0 \u2264 t \u003c 1.' },
+          { decl: 'JointResidualLimits.VanishingJointJets', file: 'NavierStokes/JointResidualLimits.lean', line: 84, note: 'Every derivative of the residual tends to zero at the singular point (1, 0); AwayExtensions (line 81) handles every other terminal point.' },
         ],
         context: [
           { src: 'openai-x', note: 'Source of the \u201cspirals inward\u201d and \u201cincreasingly elongated\u201d description.' },
@@ -114,7 +123,7 @@ export default {
         limits: [
           'The toy is two-dimensional and axisymmetric. It is chosen because it has no self-amplification, to make the obstacle visible; it is not the paper\u2019s flow.',
           'Energy per unit length is shown because a planar swirl has infinite extent in the axial direction.',
-          'The claim that the real construction uses axial stretching is taken from OpenAI\u2019s public description, not from a reading of the paper.',
+          'The description of the real construction\u2019s flow pattern (inward spiralling, axial outflow) is taken from OpenAI\u2019s public description; the scaling exponents and the residual-as-force definition are taken from the Lean sources.',
         ],
       },
     },
@@ -145,9 +154,9 @@ export default {
       },
       understand: `
 <p>Four statements were machine-checked. Two concern the viscous Navier\u2013Stokes equations <em>with</em> a smooth external force, and they are exactly the two \u201cbreakdown\u201d alternatives (C) and (D) that the official Clay problem description lists as acceptable resolutions. Two concern the ideal Euler equations <em>without</em> any force, and are not part of the Clay problem at all.</p>
-<p>Notice the logical form of the Navier\u2013Stokes theorem. It does not say \u201chere is a solution that blows up\u201d. It says: here are initial data and a force such that <strong>no</strong> global smooth solution (with bounded energy, on the whole space) exists. The blowing-up solution is how the proof gets there, but the theorem is a non-existence statement in a precisely defined class.</p>
-<p>The Euler theorem is more concrete: it names the data and the maximal lifetime $T^*$, and says which norms become infinite there.</p>
-<div class="callout caution"><b class="tag">Contested, and left contested</b>Whether the forced result \u201csolves\u201d the Navier\u2013Stokes problem is a matter of interpretation: the written problem permits it, but many mathematicians mean the unforced question. This guide reports both readings; see [[scene:implications|chapter 5]].</div>`,
+<p>Notice the logical form of the Navier\u2013Stokes theorem. It does not say \u201chere is a solution that blows up\u201d. It says: here are initial data and a force such that <strong>no</strong> global smooth solution (with bounded energy, on the whole space) exists. The blowing-up solution is how the proof gets there; the theorem is a non-existence statement in a precise class.</p>
+<p>Easy to miss: the Navier\u2013Stokes witnesses start from rest, with initial velocity identically zero, so the force creates the whole flow. The Euler theorem is more concrete: it names the data and the maximal lifetime $T^*$, and says which norms become infinite there.</p>
+<div class="callout caution"><b class="tag">Contested, and left contested</b>Whether the forced result \u201csolves\u201d the Navier\u2013Stokes problem is interpretation: the written problem permits it, but many mathematicians mean the unforced question. Both readings are reported in [[scene:implications|chapter 5]].</div>`,
       inspect: `
 <p>Both whole-space theorems have the shape</p>
 <p>$$\\exists\\, u_0,\\ (f):\\quad \\text{(data conditions)} \;\\wedge\; \\neg\\,\\big(\\exists\\, v, p:\\ \\text{(global smooth solution conditions)}\\big).$$</p>
@@ -156,7 +165,9 @@ export default {
 <h3>Reading the Euler statement</h3>
 <p>The quantitative Euler theorem fixes data $u_0$ and a time $T^* \\in (0,1]$ and asserts five things: a solution in an all-order Sobolev class exists on $[0,T^*)$; it has bounded energy there; solutions on closed intervals $[0,T]$ exist precisely for $T \\lt T^*$; the $C^1$ norm (sup of velocity plus sup of its gradient) is finite on every $[0,T]$ with $T \\lt T^*$ but its $\\limsup$ at $T^*$ is infinite; and the time integral of the vorticity supremum diverges at $T^*$. The last clause is the Beale\u2013Kato\u2013Majda criterion in action: a smooth Euler solution can be continued past $T^*$ if and only if $\\int_0^{T^*}\\norm{\\omega(t)}_{\\Linf}\\dd t \\lt \\infty$, so its divergence certifies that $T^*$ is a genuine singular time.</p>
 <details class="more"><summary>Why there are two Navier\u2013Stokes theorems</summary>
-<p>The Clay description treats the whole space and the periodic torus separately, with different decay requirements. The repository\u2019s metadata aligns the whole-space result with the paper\u2019s Theorem 1.1 and the periodic result with its Corollary 10.6, so the periodic case is derived from the whole-space construction rather than proved independently.</p></details>`,
+<p>The Clay description treats the whole space and the periodic torus separately, with different decay requirements. The repository\u2019s metadata aligns the whole-space result with the paper\u2019s Theorem 1.1 and the periodic result with its Corollary 10.6 (that label appears only in the metadata, not in the Lean sources). In the Lean, the periodic case is derived from the whole-space construction by compressing it into a quarter cube and periodizing, rather than proved independently.</p></details>
+<details class="more"><summary>The force is compactly supported in space and time</summary>
+<p>The project\u2019s own statement of Theorem 1.1 requires more of the force than the Clay class does: it is smooth on all of $\\R\\times\\R^3$ with compact support contained in strictly positive time, \u201cthe zero extension of an element of $C_c^\\infty(\\R^3\\times(0,\\infty))$\u201d. The faster-than-polynomial decay the Clay class asks for is then automatic.</p></details>`,
       verify: {
         statements: [
           { title: 'Navier\u2013Stokes, whole space, alternative (C)', html: '<pre>theorem navier_stokes_breakdown_R3 (nu : ℝ) (hnu : nu > 0) :\n    ∃ (u₀ : ℝ³ → ℝ³) (f : ℝ³ → ℝ → ℝ³),\n    InitialVelocityConditionDecay u₀ ∧ ForceConditionDecay f ∧\n    ¬ (∃ v p, NavierStokesExistenceAndSmoothnessRn nu u₀ f v p)</pre>' },
@@ -175,6 +186,9 @@ export default {
           { decl: 'Euler.exists_compact_smooth_euler_singularity', file: 'Euler/Solution.lean', line: 43 },
           { decl: 'NavierStokes.Comparator.navier_stokes_breakdown_R3 (reference, with sorry)', file: 'ComparatorChallenges/NavierStokes.lean', line: 273, note: 'The independent reference statement, adapted from Formal Conjectures, against which the proof is compared.' },
           { decl: 'Euler.velocityC1Norm / Euler.vorticityNorm', file: 'ComparatorChallenges/Euler.lean', line: 157, note: 'Definitions of the norms that diverge: suprema in \u211d\u22650\u221e, so an unbounded field has norm \u22a4.' },
+          { decl: 'NavierStokesR3.theorem_1_1_with_initial_rest', file: 'NavierStokes/R3/Theorem.lean', line: 26, note: 'The paper-level theorem: for every \u03bd \u003e 0 a candidate (u, p, f, K) with u = p = 0 for |t| \u2264 3/8 and no global finite-energy solution with the same force.' },
+          { decl: 'NavierStokesR3.comparator_of_breakdown', file: 'NavierStokes/R3/ComparatorBridge.lean', line: 77, note: 'Supplies the Clay statement with the witness u\u2080 = fun _ => 0 (line 85): the initial velocity is identically zero. The periodic witness (PeriodicPaperComparator.lean:52) is zero too.' },
+          { decl: 'NavierStokesR3.CandidateProperties', file: 'NavierStokes/R3/ProblemStatement.lean', line: 92, note: 'The project\u2019s candidate record; the module docstring (lines 14\u201317) states that the force is globally smooth with compact support in strictly positive time.' },
         ],
         context: [
           { src: 'formalization-yaml', note: 'States the alignment between paper theorems and Lean declarations, the axioms used, and sorry count 0.' },

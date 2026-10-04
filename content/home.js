@@ -5,6 +5,7 @@ export default {
   compare: [
     { k: 'Fluid model', ns: 'Viscous, incompressible fluid in three dimensions. Every positive viscosity $\\nu \\gt 0$.', euler: 'Ideal (inviscid) incompressible fluid in three dimensions.' },
     { k: 'External forcing', ns: 'A smooth, deliberately constructed force $f(x,t)$ drives the flow. Its smoothness is the hard part.', euler: 'No external force at all.' },
+    { k: 'Initial data', ns: 'The constructed witnesses start from rest: $u_0 = 0$. The force creates the whole flow.', euler: 'Smooth, compactly supported, divergence-free and nonzero. No force at any time.' },
     { k: 'Domain', ns: 'Whole space $\\R^3$ (with decay) and, separately, the periodic torus $\\R^3/\\Z^3$.', euler: 'Whole space $\\R^3$, with compactly supported initial data.' },
     { k: 'What breaks down', ns: 'No global smooth solution with uniformly bounded kinetic energy exists (whole space); no global smooth periodic solution exists (torus).', euler: 'The solution exists on a maximal time interval $[0,T^*)$ with $T^*\\le 1$; the $C^1$ norm of the velocity becomes unbounded as $t\\to T^*$ and $\\int_0^{T^*}\\norm{\\omega(t)}_{\\Linf}\\dd t=\\infty$.' },
     { k: 'What stays bounded', ns: 'Kinetic energy, by construction of the class considered.', euler: 'Kinetic energy on $[0,T^*)$.' },
