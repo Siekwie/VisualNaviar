@@ -44,8 +44,10 @@ export default {
         Fmax = Math.max(Fmax, Math.abs(f));
         vel.push([xr, v]); force.push([xr, f]); inertia.push([xr, fi]); visc.push([xr, fv]);
       }
-      const F0 = (a * F(1) + b * 1 * Fp(1)) + nu * 0 ; // initial peak force reference ≈ at ρ=1: αF(1) (β term vanishes there)
-      const F0ref = Math.max(1e-9, Math.abs(a * F(1)) + nu * 3 * Math.exp(0) * 0 + 1e-9);
+      // reference: the peak required force at the initial time s = 1 (so the readout is "× initial")
+      let F0ref = 0;
+      for (let i = 1; i <= N; i++) { const rho = (i / N) * rmax; F0ref = Math.max(F0ref, Math.abs((a * F(rho) + b * rho * Fp(rho)) - nu * Lap(rho))); }
+      F0ref = Math.max(F0ref, 1e-9);
       const E = U * U * wd * wd; // ∝ ∫ v² r dr per unit length
       ro.update({
         U: { value: U, trend: 'up' },
