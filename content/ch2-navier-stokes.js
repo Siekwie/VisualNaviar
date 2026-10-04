@@ -437,7 +437,7 @@ export default {
       status: {
         changes: 'The axis speed $j(1-t)^{-(1/2+h)} \\to \\infty$ survives the corrections, the cutoffs and the dilation; the $H^3$ norm follows it.',
         bounded: 'Any hypothetical global smooth solution: continuous, hence bounded, on the compact set $[0,1]\\times K$.',
-        fails: 'The hypothesis: no global smooth finite-energy ($\\R^3$) or smooth periodic (torus) solution exists for this force and zero data.',
+        fails: 'The hypothesis: no global smooth finite-energy ($\\R^3$) or smooth periodic (torus) solution for this force and zero data.',
       },
       understand: `
 <p>The theorem is a <strong>non-existence</strong> statement, reached by contradiction through uniqueness. The constructed solution $u$ is smooth on $[0,1)$ with zero initial data, solves the equation with the force $f$, and has unbounded speed as $t \\to 1$: the axis value $j(1-t)^{-(1/2+h)}$ is untouched by the corrections, which vanish near the axis, and by the cutoffs, which are one there.</p>

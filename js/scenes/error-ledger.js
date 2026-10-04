@@ -54,11 +54,11 @@ export default {
       /* ---------- left: the ledger versus J ---------- */
       const pts = (f) => { const out = []; for (let j = 0; j <= JMAX; j++) out.push([j, f(j)]); return out; };
       const ch = lineChart(ctx, { x: 0, y: 4, w: leftW - 6, h: H - 8 }, {
-        title: 'Booked exponent classes versus completed cycles J', xLabel: 'cycles J', yLabel: 'exponent', xDomain: [0, JMAX], yDomain: [0, 3.4], legend: 'top-left',
+        title: 'Booked exponent classes vs cycles J', xLabel: 'cycles J', yLabel: 'exponent', xDomain: [0, JMAX], yDomain: [0, 4.4], legend: 'top-left',
         series: [
-          { pts: pts((j) => 1.2 + j / 10), color: th.warn, label: 'mean / defect class C_J = 6/5 + J/10', width: 2.5 },
+          { pts: pts((j) => 1.2 + j / 10), color: th.warn, label: 'mean class C_J = 6/5 + J/10', width: 2.5 },
           { pts: pts((j) => 0.7 + j / 10), color: th.accent, label: 'wave class B_J = 7/10 + J/10', width: 2.5 },
-          { pts: pts((j) => 0.4), color: th.ok, dash: [5, 3], label: 'gain of one wave step: 2/5 (particular), 2/5 − κ (signed)' },
+          { pts: pts((j) => 0.4), color: th.ok, dash: [5, 3], label: 'gain per wave step: 2/5 (particular), 2/5 − κ (signed)' },
           { pts: pts((j) => h * j / 10), color: th.numeric, dash: [2, 3], label: `physical gain h·J/10 (h = ${h.toFixed(3)})`, width: 2 },
         ],
         marker: J,
@@ -66,9 +66,8 @@ export default {
       ctx.fillStyle = th.accent; ctx.beginPath(); ctx.arc(ch.X(J), ch.Y(B), 4, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = th.warn; ctx.beginPath(); ctx.arc(ch.X(J), ch.Y(C), 4, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = th.numeric; ctx.beginPath(); ctx.arc(ch.X(J), ch.Y(gain), 4, 0, Math.PI * 2); ctx.fill();
-      labelPill(ctx, `J = ${J}: B = ${B.toFixed(2)}, C = ${C.toFixed(2)}, hJ/10 = ${gain.toFixed(3)}`, ch.x0 + ch.w - 6, ch.y0 + ch.h - 14, { color: th.fg, align: 'right', size: 10.5 });
       /* ---------- right: stages switched on along q ---------- */
-      const rx = leftW + 50, rw = w - rx - 14, top = 30, rowH = Math.min(26, (H - 110) / ROWS), bot = top + ROWS * rowH;
+      const rx = leftW + 50, rw = w - rx - 14, top = 46, rowH = Math.min(24, (H - 130) / ROWS), bot = top + ROWS * rowH;
       const LQ = (lq) => rx + (lq / 6) * rw; // lq = −log10 q ∈ [0, 6]
       ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Stages switched on by χ(a_j q) as q → 0', rx, 6);
       ctx.strokeStyle = th.line; ctx.lineWidth = 1;
@@ -96,9 +95,10 @@ export default {
       labelPill(ctx, `label n = ${nLabel}: q ≤ 2^−${nLabel} < 2q`, LQ(Math.min(5.3, nLabel * Math.log10(2))) + 6, yD + 8, { color: th.bad, size: 9.5 });
       // marker
       ctx.strokeStyle = th.bad; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(LQ(logQ), top - 4); ctx.lineTo(LQ(logQ), bot + 24); ctx.stroke(); ctx.setLineDash([]);
-      labelPill(ctx, `q = ${q.toExponential(2)}: ${active} stage${active === 1 ? '' : 's'} on`, LQ(logQ) + (logQ > 3.6 ? -6 : 6), top - 10, { color: th.bad, align: logQ > 3.6 ? 'right' : 'left', size: 10 });
+      labelPill(ctx, `q = ${q.toExponential(2)}: ${active} stage${active === 1 ? '' : 's'} on`, LQ(logQ) + (logQ > 3.6 ? -6 : 6), top - 12, { color: th.bad, align: logQ > 3.6 ? 'right' : 'left', size: 10 });
       ctx.fillStyle = th.muted; ctx.font = `10.5px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-      ctx.fillText(`a_j = ${g}^j (illustrative; Lean only asks 2a_j ≤ a_{j+1}, a_j → ∞). Each cutoff is ≡ 1 for q ≤ 1/(2a_j), so near q = 0 every cutoff is one.`, rx - 30, bot + 52);
+      ctx.fillText(`a_j = ${g}^j is illustrative; the Lean only asks 2a_j ≤ a_{j+1}, a_j → ∞.`, rx - 30, bot + 52);
+      ctx.fillText('Each cutoff is ≡ 1 for q ≤ 1/(2a_j): near q = 0 every cutoff is one.', rx - 30, bot + 66);
     };
     ui.loop(() => draw());
     c.onResize(() => draw());

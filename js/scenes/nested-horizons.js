@@ -94,7 +94,7 @@ export default {
           ctx.strokeStyle = th.bad; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xL, y); ctx.lineTo(xL, y - hs); ctx.stroke();
           labelPill(ctx, `|∇u(tₙ,0)| ≥ previousShearₙ/2 = ${p10(rw.l10grad)}`, xL + 8, y - hs - 2, { color: th.bad, size: 10 });
         } else {
-          labelPill(ctx, 'no bound at n = 0', xR, y - 12, { color: th.faint, size: 10, align: 'right' });
+          labelPill(ctx, 'no bound at n = 0', xR, rw.ok ? y - 12 : y + 18, { color: th.faint, size: 10, align: 'right' });
         }
         // next activation and the next (nested) horizon
         ctx.fillStyle = rw.ok ? th.euler : th.bad; ctx.globalAlpha = 0.85; ctx.fillRect(xa, y - 4, wNext, 8); ctx.globalAlpha = 1;

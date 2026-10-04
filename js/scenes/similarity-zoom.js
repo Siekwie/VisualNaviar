@@ -24,7 +24,7 @@ export default {
   id: 'similarity-zoom', label: 'formula-derived',
   mount(host, params, ui) {
     let h = params.h ?? 0.08, XL = params.XL ?? 0.5, XR = params.XR ?? 3, logS = params.logS ?? 0.3, playing = false, zoom = false;
-    const P = { r: 0.55, z: 0.22 }; // a fixed physical probe point, drawn in both panels
+    const P = { r: 0.95, z: -0.42 }; // a fixed physical probe point, drawn in both panels
     const NZ = 121; // z samples for the region boundaries
     const qz = new Float64Array(NZ), zs = new Float64Array(NZ);
     const trail = [];
@@ -99,10 +99,10 @@ export default {
       ctx.fillText(zoom ? `r  (0 … ${Rmax.toExponential(1)})` : 'r (distance from the axis)', px.x + px.w / 2, px.y + px.h + 6);
       ctx.save(); ctx.translate(12, px.y + px.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(zoom ? `z  (±${Zmax.toExponential(1)})` : 'z (along the axis)', 0, 0); ctx.restore();
       ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.fillText('Physical coordinates (r, z)', px.x, 6);
-      labelPill(ctx, `t = ${t.toFixed(3)}   q(z=0) = 1 − t = ${tau.toExponential(2)}`, px.x + 4, px.y + 12, { color: th.fg, size: 10.5 });
-      labelPill(ctx, 'core', RX(0) + 6, px.y + px.h - 36, { color: th.accent, size: 10 });
-      labelPill(ctx, 'active annulus', RX(Math.min(Rmax * 0.55, Math.sqrt(2 * (XL + XR) * 0.5 * qz[NZ - 6]))), px.y + px.h - 36, { color: th.warn, size: 10, align: 'center' });
-      labelPill(ctx, 'exterior (heat)', px.x + px.w - 6, px.y + px.h - 36, { color: th.muted, size: 10, align: 'right' });
+      labelPill(ctx, `t = ${t.toFixed(3)}   q(z=0) = 1 − t = ${tau.toExponential(2)}`, px.x + 4, px.y + 14, { color: th.fg, size: 10.5 });
+      labelPill(ctx, 'core (X < X_L)', px.x + px.w - 6, px.y + 14, { color: th.accent, size: 10, align: 'right' });
+      labelPill(ctx, 'active annulus (X_L ≤ X ≤ X_R)', px.x + px.w - 6, px.y + 32, { color: th.warn, size: 10, align: 'right' });
+      labelPill(ctx, 'exterior (heat), X > X_R', px.x + px.w - 6, px.y + 50, { color: th.muted, size: 10, align: 'right' });
       labelPill(ctx, 'arrows: swirl + meridional stream, schematic', px.x + 4, px.y + px.h - 12, { color: th.muted, size: 9.5 });
       /* ---------- right: similarity plane (X, η) — frozen in time ---------- */
       const Xmax = XR * 1.35;
@@ -121,9 +121,9 @@ export default {
       ctx.strokeStyle = th.numeric; ctx.lineWidth = 1; ctx.globalAlpha = 0.5; ctx.beginPath();
       for (let i = 0; i < trail.length; i++) { const [X, e] = trail[i]; if (i === 0) ctx.moveTo(SX(X), SY(e)); else ctx.lineTo(SX(X), SY(e)); } ctx.stroke(); ctx.globalAlpha = 1;
       ctx.fillStyle = th.numeric; ctx.beginPath(); ctx.arc(Math.min(SX(XP), sx.x + sx.w), SY(etaP), 4, 0, Math.PI * 2); ctx.fill();
-      labelPill(ctx, `P: X = ${fmt.num(XP)}  η = ${etaP.toFixed(3)}`, Math.min(SX(XP), sx.x + sx.w - 120) + 6, SY(etaP) - 10, { color: th.numeric, size: 10 });
+      labelPill(ctx, `P: X = ${fmt.num(XP)}  η = ${etaP.toFixed(3)}`, Math.min(SX(XP), sx.x + sx.w - 130) + 6, SY(etaP) + (etaP < -0.6 ? -12 : 12), { color: th.numeric, size: 10 });
       ctx.strokeStyle = th.lineStrong; ctx.strokeRect(sx.x + 0.5, sx.y + 0.5, sx.w - 1, sx.h - 1);
-      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Similarity coordinates (X, η): the regions do not move', sx.x, 6);
+      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Similarity coordinates (X, η): frozen in time', sx.x, 6);
       ctx.fillStyle = th.muted; ctx.font = `11px ${th.sans}`; ctx.textAlign = 'center'; ctx.fillText('X = r² / (2q)', sx.x + sx.w / 2, sx.y + sx.h + 6);
       ctx.save(); ctx.translate(rightX + 10, sx.y + sx.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('η = z / q^(1/2−h)', 0, 0); ctx.restore();
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = th.faint; ctx.font = `10px ${th.sans}`;

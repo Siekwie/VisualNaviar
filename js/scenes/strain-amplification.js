@@ -129,7 +129,7 @@ export default {
       lineChart(ctx, { x: leftW + 6, y: 4, w: w - leftW - 10, h: h - 8 }, {
         title: 'eq. (30): [(1+(βt²)²)V′]′ = 2(1−β²t²)V', xLabel: 't  (rescaled time of equation (30))', yLabel: 'V (log)',
         yLog: true, xDomain: [0, (extend ? 3 : 1) * sol.T], yDomain: [Math.max(0.3, Math.min(1, sol.VT) * 0.8), Math.max(sol.VT, sol.bound) * 3],
-        series, marker: sol.T, legend: 'top-left',
+        series, marker: sol.T, legend: extend ? 'bottom-right' : 'top-left',
       });
     };
     ui.loop((dt, t) => {
