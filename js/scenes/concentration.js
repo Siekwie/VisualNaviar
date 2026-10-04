@@ -90,9 +90,9 @@ export default {
         xLog: true, yLog: true, xLabel: 'T − t  (log, → blowup)', yLabel: 'relative size (log)', title: 'The ledger as t → T',
         xDomain: [1e-4, 1], yDomain: [1e-3, 1e4],
         series: [
-          { pts: pts((ss) => Math.pow(ss, -a)), color: th.bad, label: 'peak speed U' },
+          { pts: pts((ss) => Math.pow(ss, -a)), color: th.bad, label: 'peak speed U', width: 3 },
+          { pts: pts((ss) => Math.pow(ss, pE)), color: th.ok, label: 'core energy U²w²L', width: 3 },
           { pts: pts((ss) => Math.pow(ss, -a - bw)), color: th.warn, label: 'gradient U/w', dash: [5, 3] },
-          { pts: pts((ss) => Math.pow(ss, pE)), color: th.ok, label: 'core energy U²w²L' },
           { pts: pts((ss) => Math.pow(ss, pZ)), color: th.numeric, label: 'enstrophy U²L', dash: [2, 3] },
         ],
         marker: s, legend: 'bottom-right',

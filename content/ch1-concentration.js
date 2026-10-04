@@ -71,11 +71,11 @@ export default {
       status: {
         changes: 'The force the equation demands grows faster than the speed: at least like $(T-t)^{-\\alpha-1}$ from the time derivative alone.',
         bounded: 'The toy\u2019s energy per unit length, when the width shrinks at least as fast as the speed grows ($\\beta \\ge \\alpha$).',
-        fails: 'Smoothness of the force. The theorem needs $f$ smooth for all $t \\ge 0$, including at and after $T$. A force that becomes infinite is not allowed.',
+        fails: 'Smoothness of the force. The theorem needs $f$ smooth for all $t \\ge 0$, through and beyond $T$. An infinite force is not allowed.',
       },
       understand: `
 <p>Here is the uncomfortable truth behind every forced blowup result: <strong>any</strong> smooth divergence-free velocity field is a solution of Navier\u2013Stokes with <em>some</em> force. Plug the field into the equation; whatever is left unbalanced, call it the force. A shrinking vortex animation is therefore always \u201ca solution\u201d. The entire content of the theorem is in the quality of the force: it must be smooth, decay, and stay smooth through the moment the velocity becomes infinite.</p>
-<p>The leftover is called the <strong>residual</strong>. The scene computes it for the simplest possible contracting vortex, a flat swirl that is told to shrink on schedule. The required force grows even faster than the velocity. It blows up. So this flow is a solution of the equations, but with a singular force, and that proves nothing.</p>
+<p>The leftover is called the <strong>residual</strong>. The scene computes it for the simplest contracting vortex, a flat swirl told to shrink on schedule. The required force grows even faster than the velocity. It blows up. So this flow solves the equations, but with a singular force, and that proves nothing.</p>
 <p>In this toy the fluid has no way to speed itself up: the pressure balances the spinning exactly and nothing else happens. A real construction needs the fluid\u2019s own nonlinear term to do the amplifying, so that the force only has to patch a mismatch. The next chapter is about making that mismatch smooth.</p>`,
       inspect: `
 <p>Write the incompressible Navier\u2013Stokes equations as</p>
@@ -140,13 +140,13 @@ export default {
       },
       status: {
         changes: 'Which equation, which domain, which force. Four theorems about two different equations.',
-        bounded: 'Kinetic energy is a hypothesis of the solution class ruled out on the whole space, and a proven property of the Euler solution on $[0,T^*)$.',
+        bounded: 'Kinetic energy: a hypothesis of the whole-space class that is ruled out, and a proven property of the Euler solution on $[0,T^*)$.',
         fails: 'Existence of a global smooth solution, in the stated class, for the constructed data and force.',
       },
       understand: `
-<p>Four statements were machine-checked. Two are about the viscous Navier\u2013Stokes equations <em>with</em> a smooth external force, and they are exactly the two \u201cbreakdown\u201d alternatives (C) and (D) that the official Clay problem description lists as acceptable resolutions. Two are about the ideal Euler equations <em>without</em> any force, and they are not part of the Clay problem at all.</p>
+<p>Four statements were machine-checked. Two concern the viscous Navier\u2013Stokes equations <em>with</em> a smooth external force, and they are exactly the two \u201cbreakdown\u201d alternatives (C) and (D) that the official Clay problem description lists as acceptable resolutions. Two concern the ideal Euler equations <em>without</em> any force, and are not part of the Clay problem at all.</p>
 <p>Notice the logical form of the Navier\u2013Stokes theorem. It does not say \u201chere is a solution that blows up\u201d. It says: here are initial data and a force such that <strong>no</strong> global smooth solution (with bounded energy, on the whole space) exists. The blowing-up solution is how the proof gets there, but the theorem is a non-existence statement in a precisely defined class.</p>
-<p>The Euler theorem is more concrete: it names the data, gives the maximal lifetime $T^*$, and says which norms become infinite at $T^*$.</p>
+<p>The Euler theorem is more concrete: it names the data and the maximal lifetime $T^*$, and says which norms become infinite there.</p>
 <div class="callout caution"><b class="tag">Contested, and left contested</b>Whether the forced result \u201csolves\u201d the Navier\u2013Stokes problem is a matter of interpretation: the written problem permits it, but many mathematicians mean the unforced question. This guide reports both readings; see [[scene:implications|chapter 5]].</div>`,
       inspect: `
 <p>Both whole-space theorems have the shape</p>

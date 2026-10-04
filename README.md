@@ -51,3 +51,11 @@ node tools/render-check.mjs http://127.0.0.1:8765
 ```
 
 Loads every scene at every depth, reports console errors, word counts per depth, and takes screenshots.
+
+```sh
+node tools/check-citations.mjs /path/to/clone/of/openai/NavierStokesAndEuler
+```
+
+Verifies every cited Lean declaration against the pinned clone (file exists, declaration name near
+the cited line), every source id, every internal link, every scene key, the word budgets, and that
+math uses `\lt`/`\gt` instead of raw angle brackets.

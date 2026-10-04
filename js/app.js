@@ -48,9 +48,10 @@ function expand(html) {
 }
 
 /* ---------- Top bar ---------- */
+const SHORT = { concentration: 'Peak speed vs energy', 'navier-stokes': 'Navier–Stokes', euler: 'Euler', verification: 'What Lean checked', implications: 'Implications' };
 function renderTopbar(active) {
   const nav = $('#chapter-nav');
-  nav.innerHTML = chapters.map((c) => `<a href="#/${c.id}" class="eq-${c.equation} ${active && active.ch === c ? 'active' : ''}" title="${esc(c.summary)}"><span class="num">${c.number}</span>${esc(c.title)}</a>`).join('');
+  nav.innerHTML = chapters.map((c) => `<a href="#/${c.id}" class="eq-${c.equation} ${active && active.ch === c ? 'active' : ''}" title="${esc(c.title)} — ${esc(c.summary)}"><span class="num">${c.number}</span>${esc(c.short || SHORT[c.id] || c.title)}</a>`).join('');
   const ds = $('#depth-switch');
   ds.innerHTML = DEPTHS.map(([k, l]) => `<button role="tab" data-depth="${k}" aria-selected="${k === depth}">${l}</button>`).join('');
   ds.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => setDepth(b.dataset.depth)));
