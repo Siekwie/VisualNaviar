@@ -38,7 +38,7 @@ const BASE = {
   'openai-x': { kind: 'context', short: 'OpenAI announcement thread', title: 'OpenAI on X: "The solution is a vortex … that spirals inward and gets increasingly elongated, like spaghetti"', url: 'https://x.com/OpenAI/status/2097374646148481532' },
   'press-devto-astra': { kind: 'context', short: 'DEV Community report', title: 'DEV Community, "OpenAI Reports Navier-Stokes Breakthrough, With GPT-6 Astra Used for Lean Verification"', url: 'https://dev.to/alifar/openai-reports-navier-stokes-breakthrough-with-gpt-6-astra-used-for-lean-verification-19d2' },
   'arxiv-swirl': { kind: 'context', short: 'arXiv:2609.17642', title: 'arXiv:2609.17642 — "Self-similar swirl between contracting porous walls … revisited in the similarity variables of the OpenAI 2026 forced blow-up construction"', url: 'https://arxiv.org/abs/2609.17642' },
-  'arxiv-ipm-smooth': { kind: 'context', short: 'arXiv:2609.16470', title: 'arXiv:2609.16470 — "Extending the Córdoba–Martínez-Zoroa IPM Blow-Up to Uniformly Space-Time Smooth Forcing"', url: 'https://arxiv.org/abs/2609.16470' },
+  'arxiv-ipm-smooth': { kind: 'reference', short: 'arXiv:2609.16470', title: 'arXiv:2609.16470 — "Extending the Córdoba–Martínez-Zoroa IPM Blow-Up to Uniformly Space-Time Smooth Forcing"', url: 'https://arxiv.org/abs/2609.16470' },
 };
 
 export const SOURCES = { ...BASE, ...extra2, ...extra3, ...extra4, ...extra5 };
