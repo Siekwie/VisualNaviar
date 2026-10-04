@@ -49,7 +49,7 @@ function expand(html) {
 }
 
 /* ---------- Top bar ---------- */
-const SHORT = { concentration: 'Peak speed, finite energy', 'navier-stokes': 'Navier–Stokes construction', euler: 'Euler construction', verification: 'What Lean verified', implications: 'Implications' };
+const SHORT = { concentration: 'Peak speed, finite energy', 'navier-stokes': 'Navier–Stokes', euler: 'Euler', verification: 'What Lean verified', implications: 'Implications' };
 function renderTopbar(active) {
   const nav = $('#chapter-nav');
   nav.innerHTML = chapters.map((c) => `<a href="#/${c.id}" class="eq-${c.equation} ${active && active.ch === c ? 'active' : ''}" title="${esc(c.title)} — ${esc(c.summary)}"><span class="num">${c.number}</span>${esc(c.short || SHORT[c.id] || c.title)}</a>`).join('');

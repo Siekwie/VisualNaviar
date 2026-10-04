@@ -30,6 +30,27 @@ GitHub Pages: serve the repository root.
 - **Two results, kept apart.** Navier–Stokes and Euler have separate chapters and separate scenes.
 - **Contested things stay contested.** Scope, attribution and physical relevance are reported, not decided.
 
+## What the guide is built on, and what it is not
+
+- **Ground truth is the Lean formalization** at the pinned commit (`content/sources.js` → `LEAN_COMMIT`).
+  Theorem statements are quoted verbatim; every Lean citation carries a file and line and is checked
+  by `tools/check-citations.mjs` against a clone of the repository.
+- **The two papers could not be read** in the environment where this guide was written (their host
+  was unreachable). Paper theorem and equation numbers appear only where the repository's own
+  metadata or Lean docstrings cite them, and are labelled as such. Treat any statement about the
+  papers' prose as unverified.
+- **Press coverage is context, never mathematics.** It is confined to "Context sources" and to
+  attributed sentences ("as reported by …"), mainly in chapters 4 and 5.
+- **Contested questions stay contested**: whether the forced result "solves" the Clay problem, who
+  had which idea first, and physical relevance are reported from both sides without a verdict.
+- The guide is independent and unofficial, with no affiliation to OpenAI, the Clay Mathematics
+  Institute, or the mathematicians named.
+
+## Deploying
+
+Any static host works. For GitHub Pages, serve the repository root (Settings → Pages → branch, folder `/`).
+No build step, no server-side code, no external requests except the links the reader clicks.
+
 ## Layout
 
 ```
