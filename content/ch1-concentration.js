@@ -11,7 +11,7 @@ export default {
       id: 'peak-vs-energy',
       title: 'Peak speed versus total energy',
       question: 'How can a fluid\u2019s maximum speed become infinite while its total kinetic energy stays finite?',
-      visual: { scene: 'concentration', label: 'formula-derived', caption: 'A contracting core: speed up, size down, energy on a ledger', params: { preset: 'leray' } },
+      visual: { scene: 'concentration', label: 'formula-derived', caption: 'A contracting core: speed up, size down, energy on a ledger', params: { preset: 'construction', h: 0.05 } },
       status: {
         changes: 'The fastest speed anywhere, and the velocity gradient across the core, grow without bound as $t \\to T$.',
         bounded: 'The energy stored in the core, speed$^2$ \u00d7 volume, when the core shrinks fast enough. In the construction it goes to zero.',
@@ -153,9 +153,9 @@ export default {
         fails: 'Existence of a global smooth solution, in the stated class, for the constructed data and force.',
       },
       understand: `
-<p>Four statements were machine-checked. Two concern the viscous Navier\u2013Stokes equations <em>with</em> a smooth external force, and they are exactly the two \u201cbreakdown\u201d alternatives (C) and (D) that the official Clay problem description lists as acceptable resolutions. Two concern the ideal Euler equations <em>without</em> any force, and are not part of the Clay problem at all.</p>
+<p>Four statements were machine-checked. Two concern the viscous Navier\u2013Stokes equations <em>with</em> a smooth external force; they are exactly the \u201cbreakdown\u201d alternatives (C) and (D) that the official Clay problem description accepts. Two concern the ideal Euler equations <em>without</em> any force, and are not part of the Clay problem.</p>
 <p>Notice the logical form of the Navier\u2013Stokes theorem. It does not say \u201chere is a solution that blows up\u201d. It says: here are initial data and a force such that <strong>no</strong> global smooth solution (with bounded energy, on the whole space) exists. The blowing-up solution is how the proof gets there; the theorem is a non-existence statement in a precise class.</p>
-<p>Easy to miss: the Navier\u2013Stokes witnesses start from rest, with initial velocity identically zero, so the force creates the whole flow. The Euler theorem is more concrete: it names the data and the maximal lifetime $T^*$, and says which norms become infinite there.</p>
+<p>Easy to miss: the Navier\u2013Stokes witnesses start from rest, so the force creates the whole flow. The Euler theorem is more concrete: it names the data and the lifetime $T^*$, and says which norms become infinite there.</p>
 <div class="callout caution"><b class="tag">Contested, and left contested</b>Whether the forced result \u201csolves\u201d the Navier\u2013Stokes problem is interpretation: the written problem permits it, but many mathematicians mean the unforced question. Both readings are reported in [[scene:implications|chapter 5]].</div>`,
       inspect: `
 <p>Both whole-space theorems have the shape</p>

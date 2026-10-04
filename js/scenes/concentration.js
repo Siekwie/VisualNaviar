@@ -31,6 +31,7 @@ export default {
     ]);
     const sl = {};
     const sync = () => { sl.a.set(a, false); sl.bw.set(bw, false); sl.bl.set(bl, false); };
+    sl.t = ui.slider({ label: 'Time to blowup, T − t', min: 0, max: 4, step: 0.01, value: 0, format: (v) => `10^−${v.toFixed(2)}`, onChange: (v) => { logS = v; } });
     const applyConstruction = () => { a = 0.5 + hh; bw = 0.5; bl = 0.5 - hh; sync(); };
     const presetSel = ui.select({
       label: 'Scaling preset', value: p.preset,
@@ -38,7 +39,6 @@ export default {
       onChange: (v) => { if (v === 'construction') applyConstruction(); else if (v !== 'custom') { a = PRESETS[v].a; bw = PRESETS[v].bw; bl = PRESETS[v].bl; sync(); } },
     });
     sl.h = ui.slider({ label: 'h in the construction preset (real h ≤ 1/1000; exaggerated here)', min: 0.001, max: 0.15, step: 0.001, value: hh, format: (v) => v.toFixed(3), onChange: (v) => { hh = v; if (presetSel.select.value === 'construction') applyConstruction(); } });
-    sl.t = ui.slider({ label: 'Time to blowup, T − t', min: 0, max: 4, step: 0.01, value: 0, format: (v) => `10^−${v.toFixed(2)}`, onChange: (v) => { logS = v; } });
     sl.a = ui.slider({ label: 'Speed exponent α  (U ∝ (T−t)^−α)', min: 0.1, max: 1.5, step: 0.05, value: a, onChange: (v) => { a = v; presetSel.select.value = 'custom'; } });
     sl.bw = ui.slider({ label: 'Width exponent β_w  (w ∝ (T−t)^β_w)', min: 0.05, max: 1.5, step: 0.05, value: bw, onChange: (v) => { bw = v; presetSel.select.value = 'custom'; } });
     sl.bl = ui.slider({ label: 'Length exponent β_L  (L ∝ (T−t)^β_L)', min: 0, max: 1.5, step: 0.05, value: bl, onChange: (v) => { bl = v; presetSel.select.value = 'custom'; } });
