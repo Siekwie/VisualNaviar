@@ -118,7 +118,7 @@ export default {
       labelPill(ctx, `n = 7:  ${p10(off.l10grad)}`, rx + 54, h1 + 52, { color: th.muted, size: 10 });
     };
     ui.slider({ label: 'Stage n (highlighted)', min: 0, max: NST - 1, step: 1, value: stage, format: (v) => `n = ${v}`, onChange: (v) => { stage = v; draw(); } });
-    ui.slider({ label: 'Stage offset J  (Lean: 3 ≤ J)', min: 3, max: 6, step: 1, value: J, format: (v) => `J = ${v}`, hint: 'The Lean stage n is the paper’s stage J+n.', onChange: (v) => { J = v; S = scales(J, X); draw(); } });
+    ui.slider({ label: 'Stage offset J  (Lean: 3 ≤ J)', min: 3, max: 6, step: 1, value: J, format: (v) => `J = ${v}`, hint: 'Lean docstring (EulerProof.lean:18954): “J+n is the stage index in the source”.', onChange: (v) => { J = v; S = scales(J, X); draw(); } });
     ui.slider({ label: 'Base scale X  (Lean: 8 ≤ X)', min: Math.log10(8), max: 7, step: 0.01, value: Math.log10(X), format: (v) => `X = ${fmt.num(Math.pow(10, v))}`, hint: 'Every exponent is proportional to X, so X only rescales the vertical axes. The floor 8 is far below the value the other conditions force.', onChange: (v) => { X = Math.pow(10, v); S = scales(J, X); draw(); } });
     ui.note('<b>Formula-derived sizes, schematic shapes.</b> Every number in the rows, readouts and charts is computed from the Lean definitions <code>scaleSequence</code>, <code>frequency</code>, <code>supportScale</code>, <code>previousShear</code> and the <code>initial_bounds</code> estimate (constants and the polynomial prefactor dropped). The wave drawings are illustrations: amplitudes, widths and wavelengths are compressed by a double logarithm so that all stages stay visible.');
     c.onResize(() => draw());

@@ -3,7 +3,8 @@
 //   The limit t → T* is finite exactly when γ < 1.
 // Beale–Kato–Majda: a smooth Euler solution continues past T* iff this integral is finite. The theorem proves
 // the integral is infinite (vorticity_lintegral_eq_top); it gives no rate, so γ is only an illustration.
-// Elementary pointwise fact used for the second curve: |ω| = ‖∇u − (∇u)ᵀ‖ ≤ 2‖∇u‖, so ‖∇u‖_∞ ≥ ‖ω‖_∞ / 2.
+// Elementary pointwise fact used for the second curve (operator norms, as in velocityC1Norm): (∇u − (∇u)ᵀ)x = ω × x,
+// so |ω| = ‖∇u − (∇u)ᵀ‖ ≤ 2‖∇u‖ and ‖∇u‖_∞ ≥ ‖ω‖_∞ / 2.
 import { lineChart, theme, labelPill, fmt } from '../scene-runtime.js';
 
 const TS = 1;
@@ -25,7 +26,7 @@ export default {
     const sl = {};
     sl.t = ui.slider({ label: 'Time to the singular time, T* − t', min: 0.3, max: 4, step: 0.01, value: logS, format: (v) => `10^−${v.toFixed(2)}`, onChange: (v) => { logS = v; } });
     ui.slider({ label: 'Model exponent γ  (‖ω‖∞ ∝ (T*−t)^−γ)', min: 0.2, max: 2, step: 0.05, value: g, format: (v) => v.toFixed(2), hint: 'The theorem proves the integral is infinite; it does not state any γ. γ ≥ 1 is the regime consistent with it.', onChange: (v) => { g = v; } });
-    ui.toggle({ label: 'Show the gradient lower bound ‖∇v‖∞ ≥ ‖ω‖∞ / 2', value: false, hint: 'Elementary: |ω| = ‖∇v − (∇v)ᵀ‖ ≤ 2‖∇v‖. The theorem’s C¹ clause is limsup ‖v‖∞ + ‖∇v‖∞ = ∞.', onChange: (v) => { showGrad = v; } });
+    ui.toggle({ label: 'Show the gradient lower bound ‖∇v‖∞ ≥ ‖ω‖∞ / 2', value: false, hint: 'Elementary, in operator norms: |ω| = ‖∇v − (∇v)ᵀ‖ ≤ 2‖∇v‖. The theorem’s C¹ clause is limsup ‖v‖∞ + ‖∇v‖∞ = ∞.', onChange: (v) => { showGrad = v; } });
     ui.toggle({ label: 'Play: approach T*', value: false, onChange: (v) => { playing = v; if (v && logS >= 3.99) logS = 0.3; } });
     ui.note('<b>Formula-derived model.</b> A power law $(T^*-t)^{-\\gamma}$ stands in for the vorticity supremum; nothing here is taken from the actual solution, whose rate is not known. The shaded area is the time integral in the Beale–Kato–Majda criterion. Finite area: the solution could be continued. Infinite area: a genuine breakdown. The theorem proves the second alternative for the constructed data.');
 

@@ -8,10 +8,11 @@
 //   strain M ≈ B + σ·(v̂ ⊗ m̂) with ⟨m, v⟩ = 0, ‖B‖ ≤ G, and the stage invariant ⟨B m̂, m̂⟩ + priorError < 0.
 //   The toy takes B m̂ = −b m̂, B v̂ = +b v̂ (trace-free), so the linear flow x ↦ M x deforms the plane by
 //   F(t) = [[e^{bt}, σ sinh(bt)/b], [0, e^{−bt}]] in (v, m) coordinates: layers ⟂ m̂ slide along v̂ and
-//   their spacing shrinks like e^{−bt}. The toy's b, σ are display choices, not the proof's constants.
+//   their spacing shrinks like e^{−bt}. The toy's b, σ are display choices, not the proof's constants. The next packet's normal is NOT the ray:
+//   joinedNormal = unit (F.adjoint (cross (unit m) (unit v))) (ParentStageDirection.lean:22,38; PacketActivationRay.lean:15).
 import { lineChart, theme, labelPill, fmt } from '../scene-runtime.js';
 
-const N = 1600;
+const N = 1800;   // divisible by 3, so t = T is a grid point on [0, 3T] as well
 function solve(beta, v1, xmax) {
   const T = 1 / Math.sqrt(beta), Tend = xmax * T, hstep = Tend / N;
   const t = new Float64Array(N + 1), V = new Float64Array(N + 1);
@@ -55,7 +56,7 @@ export default {
     ui.slider({ label: 'Initial slope V′(0)  (Lean: ≥ 0)', min: 0, max: 2, step: 0.05, value: v1, onChange: (v) => { v1 = v; resolve(); } });
     ui.toggle({ label: 'Continue past T = 1/√β (post-inversion bound V(T)/x)', value: false, onChange: (v) => { extend = v; resolve(); } });
     ui.toggle({ label: 'Animate the strain acting on the layer', value: true, onChange: (v) => { playing = v; } });
-    ui.note('<b>Numerically computed.</b> The right panel integrates the Lean’s scalar equation (30) exactly as stated (RK4, 1600 steps) and compares it with the proved lower bound <code>exp (1 / (4 * √β)) ≤ V (1 / √β)</code>. The left panel is a schematic of the frame geometry: a layer with normal along the ray m inside the strain <code>B + shear·rankOne (unit v) (unit m)</code>; its compression rate b and shear σ are display choices and are not computed from the proof.');
+    ui.note('<b>Numerically computed.</b> The right panel integrates the Lean’s scalar equation (30) exactly as stated (RK4, 1800 steps) and compares it with the proved lower bound <code>exp (1 / (4 * √β)) ≤ V (1 / √β)</code>. The left panel is a schematic of the frame geometry: a layer with normal along the ray m inside the strain <code>B + shear·rankOne (unit v) (unit m)</code>; its compression rate b and shear σ are display choices and are not computed from the proof.');
 
     const draw = (tau) => {
       const { ctx, w, h } = c; const th = theme();
@@ -120,7 +121,7 @@ export default {
       labelPill(ctx, 'strain at the origin:  M ≈ B + σ·(v̂ ⊗ m̂)', 8, 14, { color: th.fg, size: 10.5 });
       labelPill(ctx, 'compression invariant:  ⟨B m̂, m̂⟩ = −b < 0', 8, 32, { color: th.fg, size: 10.5 });
       labelPill(ctx, 'layers ⟂ m̂ slide along v̂ and close up', 8, 50, { color: th.muted, size: 10 });
-      labelPill(ctx, `next normal := m̂ (joinedNormal) · spacing ×${e2.toFixed(2)}`, 8, h - 14, { color: th.muted, size: 10 });
+      labelPill(ctx, `next normal ∝ F*(m̂ × v̂), out of this plane (joinedNormal) · spacing ×${e2.toFixed(2)}`, 8, h - 14, { color: th.muted, size: 10 });
       ctx.restore();
       /* ---- right: equation (30) ---- */
       const series = [{ pts: sol.pts, color: th.numeric, label: 'V(t)' },
