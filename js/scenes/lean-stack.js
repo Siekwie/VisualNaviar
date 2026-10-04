@@ -15,7 +15,7 @@ const LAYERS = [
   },
   {
     id: 'statement', n: 2, name: 'Lean reference statements', sub: 'ComparatorChallenges/ · 2 files, 472 lines · imports only Mathlib', tag: 'statement', tagCls: 'ns', cardCls: 'ns',
-    guarantees: 'A fixed, short, human-readable target: the definitions and the four theorem statements, adapted from Google DeepMind’s Formal Conjectures transcription of the Clay problem description. Each theorem ends in <code>sorry</code> on purpose. The proof must hit this text exactly.',
+    guarantees: 'A fixed, short, human-readable target: the definitions and the four theorem statements, adapted from Google DeepMind’s Formal Conjectures transcription of the Clay problem description. Each of the four challenge theorems ends in <code>sorry</code> on purpose (the five small divergence lemmas are proved). The proof must hit this text exactly.',
     not: 'Does not guarantee that the text means what the paper, or the Clay description, means. That is a reading, done in the next scene. The proof libraries never import these files, so nothing in the proof can alter them.',
     where: 'ComparatorChallenges/NavierStokes.lean, ComparatorChallenges/Euler.lean',
   },
@@ -39,7 +39,7 @@ const LAYERS = [
   },
   {
     id: 'comparator', n: 6, name: 'Independent re-check', sub: 'leanprover/comparator · landrun · lean4export · nanoda', tag: 'machine', tagCls: 'ok', cardCls: 'ok',
-    guarantees: 'Rebuilds the solution in a sandbox, exports the proof terms, replays them in Lean’s kernel and in nanoda, an independently written kernel, and certifies that the named theorems prove the <em>same statement</em> as the reference with no more than the permitted axioms (the README’s three guarantees).',
+    guarantees: 'Rebuilds the solution in a sandbox, exports the proof terms, replays them in Lean’s kernel and, as both configurations request, in nanoda, an independently written kernel, and on success certifies that the named theorems prove the <em>same statement</em> as the reference with no more than the permitted axioms (the README’s three guarantees).',
     not: 'Cannot judge meaning. Its guarantee rests on stated assumptions: the challenge’s imports are trusted, the sandbox holds, at least one kernel is correct. The repository ships the configuration and instructions; this guide did not run it.',
     where: 'ComparatorChallenges/README.md, ComparatorChallenges/NavierStokes.json, ComparatorChallenges/Euler.json',
   },

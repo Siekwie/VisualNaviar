@@ -17,7 +17,7 @@ export default {
   /* ---- tooling (reference) ---- */
   'comparator-readme': { kind: 'reference', short: 'Comparator README', title: 'leanprover/comparator — README: what Comparator guarantees and the assumptions it rests on', url: 'https://github.com/leanprover/comparator/blob/master/README.md' },
   'formal-conjectures-pinned': { kind: 'reference', short: 'Formal Conjectures (pinned)', title: 'Google DeepMind Formal Conjectures — FormalConjectures/Millenium/NavierStokes.lean at commit 8bf45ed7, the version the Navier–Stokes reference was copied from', url: 'https://github.com/google-deepmind/formal-conjectures/blob/8bf45ed70d48b2b2a501de9c00b26bfa38c573ee/FormalConjectures/Millenium/NavierStokes.lean' },
-  'lean4export': { kind: 'reference', short: 'lean4export', title: 'leanprover/lean4export — exports Lean environments to the low-level format consumed by external checkers', url: 'https://github.com/leanprover/lean4export' },
+  'lean4export': { kind: 'reference', short: 'lean4export', title: 'leanprover/lean4export — plain-text declaration export for Lean 4, the format external checkers consume', url: 'https://github.com/leanprover/lean4export' },
   'nanoda': { kind: 'reference', short: 'nanoda', title: 'ammkrn/nanoda_lib — an independent type checker for Lean 4 exports, written in Rust', url: 'https://github.com/ammkrn/nanoda_lib' },
   'landrun': { kind: 'reference', short: 'landrun', title: 'Zouuup/landrun — the Linux sandbox Comparator runs the solution build in', url: 'https://github.com/Zouuup/landrun' },
   'lean4': { kind: 'reference', short: 'Lean 4', title: 'leanprover/lean4 — the Lean 4 theorem prover (kernel, elaborator, Lake)', url: 'https://github.com/leanprover/lean4' },

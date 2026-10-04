@@ -74,7 +74,7 @@ export default {
           <div class="card">
             <h4>${esc(m.label)} per library</h4>
             <div class="bars">${libs.map((l) => bar(`<span class="tag ${l.cls === 'euler' ? 'euler' : l.cls === 'meta' ? '' : 'ns'}">${l.cls === 'meta' ? 'ref' : l.cls === 'euler' ? 'Euler' : 'NS'}</span>${esc(l.name)}`, l[metric] || 0, max, l.cls, `${l.name}: ${n(l[metric] || 0)} ${m.unit}`)).join('')}</div>
-            <p class="muted" style="margin:8px 0 0;font-size:12px">${metric === 'theorem' ? 'Plus <code>lemma</code>: 1 (NavierStokes/), 28 (Euler/). <code>abbrev</code> and <code>instance</code> are not counted here.' : metric === 'mathlib' ? 'The other files import project modules; Mathlib is reached transitively.' : metric === 'lines' ? 'Root modules NavierStokes.lean and Euler.lean add 3 lines.' : metric === 'files' ? 'Plus the two import-only root modules.' : 'Keyword at the start of a line, after optional attributes and modifiers.'}</p>
+            <p class="muted" style="margin:8px 0 0;font-size:12px">${metric === 'theorem' ? 'Plus <code>lemma</code>: 1 (NavierStokes/), 28 (Euler/). <code>abbrev</code> and <code>instance</code> are not counted here.' : metric === 'mathlib' ? 'The other files import project modules; Mathlib is reached transitively.' : metric === 'lines' ? 'Root modules NavierStokes.lean and Euler.lean add 3 lines.' : metric === 'files' ? 'Plus the two import-only root modules.' : metric === 'instance' ? 'Counted with <code>local</code> also allowed as a modifier: 40 (NavierStokes/) and 1,491 (Euler/) are <code>local instance</code> declarations.' : 'Keyword at the start of a line, after optional attributes and modifiers.'}</p>
           </div>
           <div class="card">
             <h4>The eight longest files</h4>
