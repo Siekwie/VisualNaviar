@@ -2,7 +2,7 @@
 // params.mode = 'stack' (default): the six layers, paper → independent re-check; click a layer for what it
 // guarantees and what it does not. params.mode = 'gaps': the same stack, compact, next to the five things
 // that sit outside any checker's reach. All text is paraphrased from the repository at the pinned commit
-// and from the Comparator README; file names in "Where" are the places to verify it.
+// and from the Comparator README; file names in "Where to check" are the places to verify it.
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -91,17 +91,17 @@ function detailLayer(l) {
   return `<div class="card ${l.cardCls}">
     <h4>${l.n}. ${esc(l.name)}</h4>
     <p class="muted" style="font-size:12.5px">${esc(l.sub)}</p>
-    <p><b class="tag ok">What this layer guarantees</b></p><p>${l.guarantees}</p>
-    <p><b class="tag bad">What it does not</b></p><p>${l.not}</p>
-    <p class="muted" style="font-size:12.5px"><b class="tag">Where to check</b> ${esc(l.where)}</p>
+    <p><b class="tag ok">What this layer guarantees</b></p><p style="color:var(--fg)">${l.guarantees}</p>
+    <p><b class="tag bad">What it does not</b></p><p style="color:var(--fg)">${l.not}</p>
+    <p class="muted" style="font-size:12.5px;margin:0"><b class="tag">Where to check</b> ${esc(l.where)}</p>
   </div>`;
 }
 function detailOutside(o) {
   return `<div class="card warn">
     <h4>(${o.letter}) ${esc(o.name)}</h4>
     <p class="muted" style="font-size:12.5px">${esc(o.sub)}</p>
-    <p><b class="tag warn">Why no checker can decide it</b></p><p>${o.why}</p>
-    <p><b class="tag">What would address it</b></p><p>${o.fix}</p>
+    <p><b class="tag warn">Why no checker can decide it</b></p><p style="color:var(--fg)">${o.why}</p>
+    <p><b class="tag">What would address it</b></p><p style="color:var(--fg);margin:0">${o.fix}</p>
   </div>`;
 }
 
@@ -113,30 +113,39 @@ export default {
     root.className = 'scene-html';
     ui.canvasWrap.appendChild(root);
     let sel = (params && params.selected) || (mode === 'gaps' ? 'out-a' : 'statement');
+    const narrow = () => (root.clientWidth || 640) < 560;
+    let lastNarrow = narrow();
 
     const render = () => {
       const layer = LAYERS.find((l) => l.id === sel);
       const out = OUTSIDE.find((o) => o.id === sel);
       const detail = layer ? detailLayer(layer) : out ? detailOutside(out) : '';
+      const cols = narrow() ? '1fr' : 'minmax(230px,1fr) minmax(0,1.35fr)';
+      let left;
       if (mode === 'stack') {
-        root.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;align-items:start">
-          <div class="lane"><h4>Trust stack · top to bottom</h4>${LAYERS.map((l, i) => layerItem(l, sel, false) + (i < LAYERS.length - 1 ? ARROW : '')).join('')}</div>
-          <div>${detail}</div>
-        </div>`;
+        left = `<div class="lane"><h4>Trust stack · top to bottom</h4>${LAYERS.map((l, i) => layerItem(l, sel, false) + (i < LAYERS.length - 1 ? ARROW : '')).join('')}</div>`;
       } else {
-        root.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;align-items:start">
+        left = `<div style="display:grid;gap:10px">
           <div class="lane"><h4>Inside the checker’s reach</h4>${LAYERS.slice(1).map((l, i, a) => layerItem(l, sel, true) + (i < a.length - 1 ? ARROW : '')).join('')}
             <div class="muted" style="font-size:12px;margin-top:6px">One certified sentence: from Mathlib’s definitions and three standard axioms, the four stated theorems follow.</div></div>
           <div class="lane"><h4>Outside its reach</h4>${OUTSIDE.map((o) => outsideItem(o, sel)).join('')}</div>
-          <div>${detail}</div>
         </div>`;
       }
+      root.innerHTML = `<div style="display:grid;grid-template-columns:${cols};gap:12px;align-items:start"><div style="min-width:0">${left}</div><div data-detail style="min-width:0;scroll-margin-top:64px">${detail}</div></div>`;
       root.querySelectorAll('.item[data-id]').forEach((n) => {
-        const pick = () => { sel = n.dataset.id; render(); const f = root.querySelector(`.item[data-id="${sel}"]`); if (f) f.focus(); };
+        const pick = () => {
+          sel = n.dataset.id; render();
+          const f = root.querySelector(`.item[data-id="${sel}"]`); if (f) f.focus({ preventScroll: true });
+          const d = root.querySelector('[data-detail]');
+          if (d) { const r = d.getBoundingClientRect(); if (r.top < 60 || r.top > window.innerHeight - 120) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+        };
         n.addEventListener('click', pick);
         n.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
       });
     };
+    const ro = new ResizeObserver(() => { const n = narrow(); if (n !== lastNarrow) { lastNarrow = n; render(); } });
+    ro.observe(root);
+    ui.onDispose(() => ro.disconnect());
     render();
     ui.note((params && params.note) || (mode === 'stack'
       ? '<b>Schematic.</b> The layers are a way of organising trust, not a timeline. Green layers are mechanical; the blue ones are texts a machine checks but a human must read; the yellow one is never checked. Counts are from the repository at the pinned commit.'

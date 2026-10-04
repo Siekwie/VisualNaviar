@@ -36,6 +36,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 export default {
   id: 'repo-stats', label: 'numerically-computed',
   mount(host, params, ui) {
+    params = params || {};
     const libs = Array.isArray(params.libs) && params.libs.length ? params.libs : LIBS;
     const longest = Array.isArray(params.longest) && params.longest.length ? params.longest : LONGEST;
     let metric = params.metric && METRICS[params.metric] ? params.metric : 'lines';
@@ -61,7 +62,7 @@ export default {
     const bar = (label, value, max, cls, title) => {
       const pct = max > 0 ? Math.max(0.6, (value / max) * 100) : 0;
       const fill = cls === 'meta' ? ' style="width:' + pct.toFixed(1) + '%;background:var(--meta)"' : ' style="width:' + pct.toFixed(1) + '%"';
-      return `<div class="bar ${cls === 'euler' ? 'euler' : ''}" style="grid-template-columns:minmax(110px,38%) 1fr 72px"${title ? ` title="${esc(title)}"` : ''}><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span><i${fill}></i><b>${n(value)}</b></div>`;
+      return `<div class="bar ${cls === 'euler' ? 'euler' : ''}" style="grid-template-columns:minmax(140px,300px) 1fr 72px"${title ? ` title="${esc(title)}"` : ''}><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span><i${fill}></i><b>${n(value)}</b></div>`;
     };
 
     const render = () => {
@@ -69,7 +70,7 @@ export default {
       const max = Math.max(...libs.map((l) => l[metric] || 0));
       const maxLong = Math.max(...longest.map((f) => f[1]));
       root.innerHTML = `
-        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+        <div class="grid" style="grid-template-columns:1fr">
           <div class="card">
             <h4>${esc(m.label)} per library</h4>
             <div class="bars">${libs.map((l) => bar(`<span class="tag ${l.cls === 'euler' ? 'euler' : l.cls === 'meta' ? '' : 'ns'}">${l.cls === 'meta' ? 'ref' : l.cls === 'euler' ? 'Euler' : 'NS'}</span>${esc(l.name)}`, l[metric] || 0, max, l.cls, `${l.name}: ${n(l[metric] || 0)} ${m.unit}`)).join('')}</div>
