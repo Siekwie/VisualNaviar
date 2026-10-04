@@ -13,7 +13,7 @@
 import { lineChart, theme, labelPill, fmt } from '../scene-runtime.js';
 
 const LN10 = Math.LN10;
-const NST = 8;                 // stages drawn: n = 0 … 7
+const NST = 8;                 // layers drawn: n = 0 … 7
 const SOB = [0, 1, 2, 3, 5];   // Sobolev orders charted
 
 function scales(J, X) {
@@ -40,6 +40,8 @@ function p10(l10) {
   return `10^${Math.abs(e) >= 1e6 ? `(${fmt.num(e)})` : (e < 0 ? `−${-e}` : e)}`;
 }
 const bound = (s, q) => s * (q.l10k + q.l10linv) + q.l10amp;   // log10 of ℓ^{−s} k^{s} e^{−x/8}
+/** Slider readout for X: whole numbers without decimals ("X = 8"), otherwise one decimal. */
+const fmtX = (x) => { const r = Math.round(x * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); };
 
 export default {
   id: 'layer-cascade', label: 'formula-derived',
@@ -61,7 +63,7 @@ export default {
         x: { value: p10(q.l10x), detail: `x₍ₙ₊₁₎ = (J+n)²·xₙ, J = ${J}, n = ${stage}` },
         k: { value: p10(q.l10k), trend: 'up', detail: 'frequency = exp(xₙ/(J+n)²)' },
         l: { value: p10(-q.l10linv), trend: 'down', detail: 'supportScale = exp(−xₙ/(J+n)^(7/2))' },
-        a: { value: p10(q.l10amp), trend: 'down', detail: `e^(−xₙ/8): H⁰ bound of increment ${stage}` },
+        a: { value: p10(q.l10amp), trend: 'down', detail: `e^(−xₙ/8): H⁰ bound of layer ${stage}` },
         g: { value: stage === 0 ? 'n/a' : p10(q.l10grad), trend: 'up', detail: stage === 0 ? 'gradient_lower needs n ≠ 0' : '≥ previousShearₙ / 2 (gradient_lower)' },
       });
       ctx.clearRect(0, 0, w, h);
@@ -105,22 +107,22 @@ export default {
       const series1 = SOB.map((s, i) => ({ pts: S.map((q2) => [q2.n, bound(s, q2)]), color: [th.ok, th.accent, th.numeric, th.warn, th.bad][i], label: `s = ${s}`, width: s === 0 ? 2.4 : 1.8 }));
       const yr = 40 * X;
       lineChart(ctx, { x: rx, y: 2, w: rw, h: h1 - 4 }, {
-        title: 'log₁₀ of the Hˢ bound  ℓₙ⁻ˢ kₙˢ e^(−xₙ/8)', xLabel: 'stage n', yLabel: 'log₁₀ (bound)',
+        title: 'log₁₀ of the Hˢ bound  ℓₙ⁻ˢ kₙˢ e^(−xₙ/8)', xLabel: 'layer n', yLabel: 'log₁₀ (bound)',
         xDomain: [0, NST - 1], yDomain: [-yr, yr], series: series1, marker: stage, legend: 'top-right',
       });
       const off = S[NST - 1];
       labelPill(ctx, `n = 7, s = 0:  ${p10(bound(0, off))}`, rx + 54, 36, { color: th.muted, size: 10 });
       lineChart(ctx, { x: rx, y: h1, w: rw, h: h - h1 - 2 }, {
-        title: 'log₁₀ gradient bound  previousShearₙ/2', xLabel: 'stage n', yLabel: 'log₁₀ (bound)',
+        title: 'log₁₀ gradient bound  previousShearₙ/2', xLabel: 'layer n', yLabel: 'log₁₀ (bound)',
         xDomain: [0, NST - 1], yDomain: [-1, 4 * X], marker: stage, legend: 'top-left',
         series: [{ pts: S.filter((q2) => q2.n >= 1).map((q2) => [q2.n, q2.l10grad]), color: th.euler, label: 'gradient_lower (n ≥ 1)' }],
       });
       labelPill(ctx, `n = 7:  ${p10(off.l10grad)}`, rx + 54, h1 + 52, { color: th.muted, size: 10 });
     };
-    ui.slider({ label: 'Stage n (highlighted)', min: 0, max: NST - 1, step: 1, value: stage, format: (v) => `n = ${v}`, onChange: (v) => { stage = v; draw(); } });
+    ui.slider({ label: 'Layer n (highlighted)', min: 0, max: NST - 1, step: 1, value: stage, format: (v) => `n = ${v}`, onChange: (v) => { stage = v; draw(); } });
     ui.slider({ label: 'Stage offset J  (Lean: 3 ≤ J)', min: 3, max: 6, step: 1, value: J, format: (v) => `J = ${v}`, hint: 'Lean docstring (EulerProof.lean:18954): “J+n is the stage index in the source”.', onChange: (v) => { J = v; S = scales(J, X); draw(); } });
-    ui.slider({ label: 'Base scale X  (Lean: 8 ≤ X)', min: Math.log10(8), max: 7, step: 0.01, value: Math.log10(X), format: (v) => `X = ${fmt.num(Math.pow(10, v))}`, hint: 'Every exponent is proportional to X, so X only rescales the vertical axes. The floor 8 is far below the value the other conditions force.', onChange: (v) => { X = Math.pow(10, v); S = scales(J, X); draw(); } });
-    ui.note('<b>Formula-derived sizes, schematic shapes.</b> Every number in the rows, readouts and charts is computed from the Lean definitions <code>scaleSequence</code>, <code>frequency</code>, <code>supportScale</code>, <code>previousShear</code> and the <code>initial_bounds</code> estimate (constants and the polynomial prefactor dropped). The wave drawings are illustrations: amplitudes, widths and wavelengths are compressed by a double logarithm so that all stages stay visible.');
+    ui.slider({ label: 'Base scale X  (Lean: 8 ≤ X; capped at 100 here)', min: Math.log10(8), max: 2, step: (2 - Math.log10(8)) / 110, value: Math.log10(X), format: (v) => `X = ${fmtX(Math.pow(10, v))}`, hint: 'Every exponent is proportional to X, so X only rescales the vertical axes; beyond X ≈ 30 the printed powers of ten stop being readable (10^(−10¹⁸) and worse), so this scene stops at 100. The Lean floor is 8; the other conditions in <code>Scales</code> force X far larger (scene 3).', onChange: (v) => { X = Math.pow(10, v); S = scales(J, X); draw(); } });
+    ui.note('<b>Formula-derived sizes, schematic shapes.</b> Every number in the rows, readouts and charts is computed from the Lean definitions <code>scaleSequence</code>, <code>frequency</code>, <code>supportScale</code>, <code>previousShear</code> and the <code>initial_bounds</code> estimate (constants and the polynomial prefactor dropped). The wave drawings are illustrations: amplitudes, widths and wavelengths are compressed by a double logarithm so that all layers stay visible.');
     c.onResize(() => draw());
     return { destroy() {} };
   },

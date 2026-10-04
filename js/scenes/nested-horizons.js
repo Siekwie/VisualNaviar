@@ -69,8 +69,15 @@ export default {
       tick(xL, '0', th.muted, true); tick(xR, `baseHorizon = ${p10(D.l10base)}`, th.muted, true, 'right');
       tick(xL + span / 12, 'baseHorizon/12', th.faint, false);
       const x1 = xL + span * D.nextFrac;
-      tick(x1, 't₁ (stage 1 switched on)', th.euler, true);
-      labelPill(ctx, `t₂, t₃, … lie within ${p10(D.rows[1].l10stepFrac + 0.3)} × baseHorizon of t₁  →  T* ≤ baseHorizon`, x1 + 6, yA + 17, { color: th.fg, size: 10 });
+      tick(x1, 't₁ (stage 1 switched on)', th.euler, true, x1 - xL < 70 ? 'left' : 'center');   // left-aligned when close to the 0 tick
+      // summary line: measured, and shortened or wrapped so it never runs past the canvas edge
+      ctx.font = `600 10px ${th.sans}`;
+      const within = `t₂, t₃, … lie within ${p10(D.rows[1].l10stepFrac + 0.3)} × baseHorizon of t₁`, tail = 'T* ≤ baseHorizon';
+      const sx = Math.max(x1 + 6, xL + span / 12 + 48);   // clear of the baseHorizon/12 tick label
+      const availW = xR - sx - 12;
+      if (ctx.measureText(`${within}  →  ${tail}`).width <= availW) labelPill(ctx, `${within}  →  ${tail}`, sx, yA + 17, { color: th.fg, size: 10 });
+      else if (ctx.measureText(within).width <= availW) { labelPill(ctx, within, sx, yA + 17, { color: th.fg, size: 10 }); labelPill(ctx, `→ ${tail}`, sx, yA + 31, { color: th.fg, size: 10 }); }
+      else { labelPill(ctx, `t₂, t₃, … within ${p10(D.rows[1].l10stepFrac + 0.3)} × baseHorizon`, sx, yA + 17, { color: th.fg, size: 10 }); labelPill(ctx, `of t₁ → ${tail}`, sx, yA + 31, { color: th.fg, size: 10 }); }
       labelPill(ctx, 'absolute time (unit = baseHorizon)', 8, yA, { color: th.muted, size: 10 });
       /* ---- rows: each horizon rescaled to full width ---- */
       const top = 78, rowH = (h - top - 30) / ROWS;
@@ -94,18 +101,21 @@ export default {
           ctx.strokeStyle = th.bad; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xL, y); ctx.lineTo(xL, y - hs); ctx.stroke();
           labelPill(ctx, `|∇u(tₙ,0)| ≥ previousShearₙ/2 = ${p10(rw.l10grad)}`, xL + 8, y - hs - 2, { color: th.bad, size: 10 });
         } else {
-          labelPill(ctx, 'no bound at n = 0', xR, rw.ok ? y - 12 : y + 18, { color: th.faint, size: 10, align: 'right' });
+          labelPill(ctx, 'no bound at n = 0', xR, y + 18, { color: th.faint, size: 10, align: 'right' });
         }
         // next activation and the next (nested) horizon
         ctx.fillStyle = rw.ok ? th.euler : th.bad; ctx.globalAlpha = 0.85; ctx.fillRect(xa, y - 4, wNext, 8); ctx.globalAlpha = 1;
         ctx.strokeStyle = th.euler; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(xa, y - 9); ctx.lineTo(xa, y + 9); ctx.stroke();
-        labelPill(ctx, `t${sub(i + 1)} = t${sub(i)} + tw${sub(i)}/(3√q)`, xa, y + 18, { color: th.euler, size: 10, align: 'center' });
-        labelPill(ctx, `next horizon: ${p10(rw.l10r)} × this one ${rw.ok ? '(≤ ½ ✓)' : '(> ½ ✗)'}`, Math.min(xa + wNext + 8, xR - 250), y - 12, { color: rw.ok ? th.ok : th.bad, size: 10 });
+        // the step formula is printed once, under the last row; on the other rows it would sit under the next row's spike label
+        if (i === ROWS - 1) labelPill(ctx, `t${sub(i + 1)} = t${sub(i)} + tw${sub(i)}/(3√q)`, xa, y + 18, { color: th.euler, size: 10, align: 'center' });
+        const nh = `next horizon: ${p10(rw.l10r)} × this one ${rw.ok ? '(≤ ½ ✓)' : '(> ½ ✗)'}`;
+        ctx.font = `600 10px ${th.sans}`;
+        labelPill(ctx, nh, Math.min(xa + wNext + 8, xR - ctx.measureText(nh).width - 12), y - 12, { color: rw.ok ? th.ok : th.bad, size: 10 });
       }
     };
     ui.slider({ label: 'Stage offset J  (Lean: 3 ≤ J)', min: 3, max: 6, step: 1, value: J, format: (v) => `J = ${v}`, onChange: (v) => { J = v; D = compute(J, Math.pow(10, l10X), q); draw(); } });
     ui.slider({ label: 'Base scale X  (Lean: 8 ≤ X, chosen by existence)', min: 6, max: 9, step: 0.05, value: l10X, format: (v) => `X = 10^${v.toFixed(2)}`, hint: 'Below X ≈ 3.7·10⁶ (for J = 3) the first nesting ratio exceeds ½, whatever q; the Lean’s Scales exclude such X.', onChange: (v) => { l10X = v; D = compute(J, Math.pow(10, l10X), q); draw(); } });
-    ui.slider({ label: 'q = aₙ·βₙ·xₙ²  (Lean: ¼ ≤ q ≤ 4; placeholder, one value for all n)', min: 0.25, max: 4, step: 0.05, value: q, format: (v) => fmt.num(v, 2), onChange: (v) => { q = v; D = compute(J, Math.pow(10, l10X), q); draw(); } });
+    ui.slider({ label: 'Unknown frame factor q = aₙβₙxₙ²  (Lean range ¼…4; not pinned down by the sources)', min: 0.25, max: 4, step: 0.05, value: q, format: (v) => `q = ${v.toFixed(2)}`, hint: 'The Lean only bounds the frame numbers aₙ and βₙ (½ ≤ aₙ ≤ 2, ½ ≤ βₙxₙ² ≤ 2) and never computes them; one value of q stands in for every stage, so the drawn activation times are illustrative.', onChange: (v) => { q = v; D = compute(J, Math.pow(10, l10X), q); draw(); } });
     ui.note('<b>Formula-derived.</b> Times are computed from <code>stepLength</code>, <code>activationTime</code>, <code>horizonTime</code>, <code>timeWidth</code> and <code>baseHorizon</code> as defined in the Lean, with the unknown frame numbers aₙ and βₙ replaced by one placeholder q inside the range the Lean hypothesises. Each row rescales one stage’s horizon to full width; the shaded strip is the next stage’s horizon at true relative size (at least 3 px). Spike heights are compressed; their labels are exact. Stage 0 has no spike because <code>gradient_lower</code> requires n ≠ 0.');
     c.onResize(() => draw());
     return { destroy() {} };

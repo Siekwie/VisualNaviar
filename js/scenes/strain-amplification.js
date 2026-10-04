@@ -53,7 +53,7 @@ export default {
       { key: 'K', label: 'Toy wavenumber gain' },
     ]);
     ui.slider({ label: 'β in equation (30)  (Lean: 0 < β ≤ 1/16)', min: 0.004, max: 0.0625, step: 0.0005, value: beta, format: (v) => v.toFixed(4), hint: 'In the stage, β ≈ 1/xₙ² (tilt invariant ½ ≤ σ²xₙ² ≤ 2), so the gain e^(1/(4√β)) ≈ e^(xₙ/4) is enormous.', onChange: (v) => { beta = v; resolve(); } });
-    ui.slider({ label: 'Initial slope V′(0)  (Lean: ≥ 0)', min: 0, max: 2, step: 0.05, value: v1, onChange: (v) => { v1 = v; resolve(); } });
+    ui.slider({ label: 'Initial slope V′(0)  (Lean: ≥ 0)', min: 0, max: 2, step: 0.05, value: v1, format: (v) => v.toFixed(2), onChange: (v) => { v1 = v; resolve(); } });
     ui.toggle({ label: 'Continue past T = 1/√β (post-inversion bound V(T)/x)', value: false, onChange: (v) => { extend = v; resolve(); } });
     ui.toggle({ label: 'Animate the strain acting on the layer', value: true, onChange: (v) => { playing = v; } });
     ui.note('<b>Numerically computed.</b> The right panel integrates the Lean’s scalar equation (30) exactly as stated (RK4, 1800 steps) and compares it with the proved lower bound <code>exp (1 / (4 * √β)) ≤ V (1 / √β)</code>. The left panel is a schematic of the frame geometry: a layer with normal along the ray m inside the strain <code>B + shear·rankOne (unit v) (unit m)</code>; its compression rate b and shear σ are display choices and are not computed from the proof.');
@@ -64,7 +64,7 @@ export default {
       ro.update({
         T: { value: fmt.num(sol.T), detail: `T = 1/√β, β = ${beta.toFixed(4)}` },
         VT: { value: fmt.num(sol.VT), trend: 'up', detail: 'V(0) = 1, RK4' },
-        B: { value: fmt.num(sol.bound), detail: 'e^(1/(4√β)), equation30_endpoint_exponential' },
+        B: { value: fmt.num(sol.bound), detail: 'e^(1/(4√β)); Lean: equation30_\u200bendpoint_\u200bexponential' },
         R: { value: fmt.num(sol.VT / sol.bound), trend: sol.VT >= sol.bound ? 'up' : 'down', detail: sol.VT >= sol.bound ? 'bound respected' : 'bound violated (numerical error?)' },
         K: { value: fmt.num(e1), trend: 'up', detail: `e^(bt): layer spacing ÷ ${e1.toFixed(2)}, toy t = ${tau.toFixed(2)}` },
       });
@@ -118,10 +118,18 @@ export default {
       arrow(ox, oy, ...P(0, mlen), th.bad, `ray m  (×${e1.toFixed(2)})`, 'right');
       arrow(ox, oy, ...P(0.8, 0), th.accent, 'v ⟂ m', 'left');
       ctx.fillStyle = th.fg; ctx.beginPath(); ctx.arc(ox, oy, 3, 0, Math.PI * 2); ctx.fill();
-      labelPill(ctx, 'strain at the origin:  M ≈ B + σ·(v̂ ⊗ m̂)', 8, 14, { color: th.fg, size: 10.5 });
-      labelPill(ctx, 'compression invariant:  ⟨B m̂, m̂⟩ = −b < 0', 8, 32, { color: th.fg, size: 10.5 });
-      labelPill(ctx, 'layers ⟂ m̂ slide along v̂ and close up', 8, 50, { color: th.muted, size: 10 });
-      labelPill(ctx, `next normal ∝ F*(m̂ × v̂), out of this plane (joinedNormal) · spacing ×${e2.toFixed(2)}`, 8, h - 14, { color: th.muted, size: 10 });
+      // every caption is measured against the panel width and falls back to a shorter form (phones)
+      const fits = (text, size) => { ctx.font = `600 ${size}px ${th.sans}`; return ctx.measureText(text).width + 20 <= leftW; };
+      const pick = (long, short, size) => (fits(long, size) ? long : short);
+      labelPill(ctx, pick('strain at the origin:  M ≈ B + σ·(v̂ ⊗ m̂)', 'M ≈ B + σ·(v̂ ⊗ m̂)', 10.5), 8, 14, { color: th.fg, size: 10.5 });
+      labelPill(ctx, pick('compression invariant:  ⟨B m̂, m̂⟩ = −b < 0', '⟨B m̂, m̂⟩ = −b < 0', 10.5), 8, 32, { color: th.fg, size: 10.5 });
+      labelPill(ctx, pick('layers ⟂ m̂ slide along v̂ and close up', 'layers ⟂ m̂ close up', 10), 8, 50, { color: th.muted, size: 10 });
+      const noteA = 'next normal ∝ F*(m̂ × v̂), out of this plane (joinedNormal)', noteB = `layer spacing ×${e2.toFixed(2)}`;
+      if (fits(`${noteA} · ${noteB}`, 10)) labelPill(ctx, `${noteA} · ${noteB}`, 8, h - 14, { color: th.muted, size: 10 });
+      else {
+        labelPill(ctx, pick(noteA, 'next normal: F*(m̂ × v̂), out of plane', 10), 8, h - 30, { color: th.muted, size: 10 });
+        labelPill(ctx, noteB, 8, h - 14, { color: th.muted, size: 10 });
+      }
       ctx.restore();
       /* ---- right: equation (30) ---- */
       const series = [{ pts: sol.pts, color: th.numeric, label: 'V(t)' },

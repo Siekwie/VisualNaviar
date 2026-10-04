@@ -2,32 +2,33 @@
 // Paper equation numbers appear only as "the Lean docstring cites equation (N)"; the PDF was not read.
 export default {
   id: 'euler', number: 3, title: 'The Euler construction', equation: 'euler',
-  summary: 'Localized oscillations at wildly separated scales are amplified stage by stage; the limit of the stages is smooth initial data whose solution cannot be continued.',
+  summary: 'Localized oscillations at wildly separated scales are amplified layer by layer; the sum of all the layers is smooth initial data whose solution cannot be continued.',
   scenes: [
     /* ------------------------------------------------------------------ */
     {
       id: 'layers-at-smaller-scales',
       title: 'Layers at ever smaller scales',
       question: 'How can smooth initial data already contain a singularity?',
-      visual: { scene: 'layer-cascade', label: 'formula-derived', caption: 'Stage-by-stage increments: sizes from the Lean scale sequences, wave shapes schematic', params: { J: 3, X: 8, stage: 2 } },
+      visual: { scene: 'layer-cascade', label: 'formula-derived', caption: 'Layer by layer: sizes from the Lean scale sequences, wave shapes schematic', params: { J: 3, X: 8, stage: 2 } },
       status: {
-        changes: 'From stage to stage the scale $x_n$ grows like $(J+n)^2 x_{n-1}$; wavenumbers and shears grow as exponentials of it.',
-        bounded: 'Every Sobolev norm of the sum: for large $n$ the increments’ $H^s$ bounds collapse like $e^{-x_n/8}$.',
-        fails: 'Nothing yet. The data are smooth and compactly supported. The Lean proves the sum converges; the singularity needs the dynamics.',
+        changes: 'Each layer’s scale is the previous one times a growing square; wavenumbers and shears grow as exponentials of it.',
+        bounded: 'Every derivative of the sum: the layers shrink so fast that all derivative norms stay finite.',
+        fails: 'Nothing yet. The data are smooth and vanish outside a ball; the singularity needs the dynamics.',
       },
       understand: `
-<p>The initial velocity is assembled in stages. Stage $n$ adds one thin layer: a localized plane wave with wavenumber $k_n$ and amplitude of order $e^{-x_n/8}$, where the scale parameters explode,</p>
-<p>$$x_{n+1} = (J+n)^2\\, x_n, \\qquad k_n = e^{x_n/(J+n)^2}.$$</p>
-<p>Each layer on its own is harmless: a smooth, compactly supported field. The layers live at wildly separated scales, and their sizes shrink so fast that the sum converges in every Sobolev norm. The limit is a $C^\\infty$, divergence-free field supported in the ball of radius 2. Nothing in the data looks singular.</p>
-<p>The singularity is in what the flow will do with the layers. At the moment layer $n$ is switched on, the solution’s velocity gradient at the origin is already at least $\\tfrac12\\,\\mathrm{previousShear}_n$, a quantity that grows without bound. Smooth data, unbounded future gradients: that is the plan of the whole chapter.</p>
-<div class="callout key"><b class="tag">Boundary</b>This is not the Navier–Stokes construction with viscosity switched off. The Euler proof is its own iterative construction, in a separate Lean library (<code>Euler/</code>, 1,839 files) that imports nothing from the Navier–Stokes part.</div>`,
+<p>The initial velocity is built up layer by layer. Layer <i>n</i> is one thin ripple: a localized plane wave whose wavelength and amplitude are set by one number, its scale $x_n$, and the scales run away:</p>
+<p>$$x_{n+1} = (J+n)^2\\, x_n.$$</p>
+<p>The wavelength shrinks like an exponential of the scale, but the amplitude shrinks faster still. So the layers add up to a smooth, <span class="gloss" title="Incompressible: no fluid parcel is squeezed or expanded; written ∇·u = 0.">divergence-free</span> field, zero outside the ball of radius 2, however many derivatives one takes. The Lean calls layer <i>n</i> together with its solution a <code>Stage</code>. Nothing in the data looks singular.</p>
+<p>The singularity is in what the flow will do with the layers. When layer <i>n</i> is switched on, the <span class="gloss" title="How fast the velocity changes from point to point; its size at the origin is what blows up.">velocity gradient</span> at the origin is already at least half of <span class="gloss" title="The shear strength inherited from the earlier layers; the Lean calls it previousShear.">previousShear</span>, a number that grows without bound. Smooth data, unbounded future gradients: that is the plan of the whole chapter.</p>
+<div class="callout key"><b class="tag">Boundary</b>This is not Navier–Stokes with viscosity switched off. The Euler proof is its own iterative construction, in a separate Lean library (<code>Euler/</code>, 1,839 files) that imports nothing from the Navier–Stokes part.</div>`,
       stage: {
-        need: 'Smooth, compactly supported, divergence-free initial data that nevertheless carry an infinite sequence of structures at separated scales.',
+        need: 'Smooth initial data, vanishing outside a ball, that still carry an endless sequence of structures at ever smaller scales.',
         whyNot: 'A single vortex, or any finite sum of waves, has a smooth solution for a positive time; no finite picture forces blowup.',
-        ingredient: 'The scale recursion $x_{n+1}=(J+n)^2x_n$: amplitudes $e^{-x_n/8}$ beat every power of the wavenumber $e^{x_n/(J+n)^2}$, so the sum is smooth.',
-        remaining: 'That each stage is an actual Euler solution on its horizon, and that gradients at activation grow: the next two scenes.',
+        ingredient: 'The scale recursion: each scale is the previous one times a growing square, so amplitudes beat every power of the wavenumber and the sum stays smooth.',
+        remaining: 'That each layer’s solution is a genuine Euler solution on its own horizon, and that gradients at activation grow: the next two scenes.',
       },
       inspect: `
+<p>In symbols: layer $n$ is a plane wave with wavenumber $k_n = e^{x_n/(J+n)^2}$ and amplitude of order $e^{-x_n/8}$, so its amplitude beats every power of its wavenumber. The sum of the layers converges in every <span class="gloss" title="A norm measuring a field together with its first s derivatives, in mean square; convergence in every Sobolev norm gives a smooth limit.">Sobolev norm</span> $H^s$, and the limit is a $C^\\infty$, divergence-free field supported in the ball of radius 2. At the activation time of layer $n$ the velocity gradient at the origin is at least $\\tfrac12\\,\\mathrm{previousShear}_n$ ([[scene:euler/strain-amplifies-the-next-layer|scene 2]]).</p>
 <p>The scale sequences, as defined in the Lean ([[src:lean-euler-scales]]; the module docstring calls them “the literal sequences in (37)”):</p>
 <p>$$x_0 = X,\\quad x_{n+1} = (J+n)^2 x_n,\\qquad k_n = e^{x_n/(J+n)^2},\\quad \\ell_n = e^{-x_n/(J+n)^{7/2}},\\quad \\mathrm{shear}_n = e^{x_n/(J+n)^5},$$</p>
 <p>with $\\mathrm{previousShear}_0 = X^{1000}$ and $\\mathrm{previousShear}_{n+1} = \\mathrm{shear}_n$. The record <code>Scales</code> demands $J \\ge 3$, $X \\ge 8$, $D \\ge 2000$ and summability conditions; its values come from an existence proof ([[scene:euler/nested-horizons|scene 3]]).</p>
@@ -114,21 +115,22 @@ def previousShear (J : ℕ) (X : ℝ) : ℕ → ℝ
       question: 'Why does each layer get amplified by the ones before it?',
       visual: { scene: 'strain-amplification', label: 'numerically-computed', caption: 'Left: a layer in a compressive shear (schematic). Right: the Lean’s scalar amplification equation (30), integrated in the browser', params: { beta: 0.02, v1: 0 } },
       status: {
-        changes: 'A layer aligned with the ray $m$ is compressed when $\\langle B\\hat m,\\hat m\\rangle \\lt 0$; equation (30) then gains at least $e^{1/(4\\sqrt\\beta)}$.',
-        bounded: 'The bounded part of the strain, $\\|B\\|\\le G$, plus the remainder error: together at most $\\tfrac12\\,\\mathrm{previousShear}_n$.',
-        fails: 'Nothing is broken yet; but a gradient of size $\\mathrm{previousShear}_n/2$ at the origin at each activation will force the breakdown.',
+        changes: 'A layer aligned with the ray is compressed; equation (30) then multiplies its amplitude by an enormous, explicit factor.',
+        bounded: 'The bounded part of the strain plus the remainder error: together at most half of previousShear.',
+        fails: 'Nothing is broken yet; but a gradient of half previousShear at the origin at each activation will force the breakdown.',
       },
       understand: `
-<p>Picture the flow the earlier layers create. Near the origin it is a linear flow, a <em>strain</em>. The Lean records it at every stage as a bounded part $B$ plus a dominant rank-one shear of strength $\\mathrm{previousShear}_n$ along two perpendicular directions: the velocity $v$ and the ray $m$.</p>
-<p>A strain that compresses along $m$ squeezes every wave whose crests are perpendicular to $m$: the crests move closer together, the wavenumber grows, and so does the velocity gradient. Large-scale strain amplifying small-scale structure is vortex stretching at its simplest. At each activation time the compression condition $\\langle B\\hat m,\\hat m\\rangle \\lt 0$ holds. The next layer is a plane wave whose normal the Lean reads off the frame: $\\hat m\\times\\hat v$, carried by the deformation (<code>joinedNormal</code>).</p>
-<p>Its growth is then governed by one scalar ODE, the Lean’s “equation (30)”, which multiplies the amplitude by at least $e^{1/(4\\sqrt\\beta)}$ by the rescaled time $1/\\sqrt\\beta$, with $\\beta\\approx 1/x_n^2$ tiny. The layer does not amplify itself: a transverse plane wave does not advect itself, so the growth comes from the earlier layers’ strain.</p>`,
+<p>Picture the flow that the earlier layers create. Near the origin it is a <span class="gloss" title="A flow that stretches in some directions and squeezes in others; close to any point, a smooth flow looks like one.">strain</span>. The Lean records it at every stage as a bounded part plus a dominant <span class="gloss" title="A flow in which parallel sheets slide past one another, all in one direction; ‘rank one’ because a single direction carries all of it.">rank-one shear</span> of strength <span class="gloss" title="The shear strength inherited from the earlier layers; the Lean calls it previousShear.">previousShear</span>, fixed by two perpendicular directions: a ray and a velocity.</p>
+<p>A strain that compresses along the ray squeezes every wave whose crests lie across the ray: the crests move closer together, the wavelength shrinks, and the velocity gradient grows. Large-scale strain amplifying small-scale structure is vortex stretching at its simplest. The Lean checks this compression at each activation time and reads the next layer’s orientation off the same two directions.</p>
+<p>How much growth? One scalar differential equation, the Lean’s “equation (30)”, controls it: by the rescaled time $1/\\sqrt\\beta$ the amplitude has grown by at least $e^{1/(4\\sqrt\\beta)}$, where the small number β is about one over the square of the layer’s scale, so the gain is astronomical. The layer does not amplify itself: a plane wave does not carry itself along, so all the growth comes from the earlier layers’ strain.</p>`,
       stage: {
-        need: 'A mechanism by which the layers already present make the next layer’s gradient grow by a huge, controlled factor.',
-        whyNot: 'Layers at separated scales barely interact linearly; by itself a smooth layer just transports. Growth needs the nonlinear term: strain acting on finer structure.',
-        ingredient: 'The frame: at the origin the strain is a rank-one shear $\\mathrm{previousShear}_n\\,(\\hat v\\otimes\\hat m)$ plus a compressive bounded part; the next normal is $\\hat m\\times\\hat v$ carried by the deformation.',
-        remaining: 'That the invariants (shear, tilt, compression, small errors) propagate to the next stage with summable losses, and that the horizons nest.',
+        need: 'A mechanism by which the layers already present make the next layer’s gradient grow by a huge but controlled factor.',
+        whyNot: 'Layers at separated scales barely interact linearly; by itself a smooth layer is just carried along. Growth needs the nonlinear term: strain acting on finer structure.',
+        ingredient: 'The frame: at the origin the strain is a rank-one shear of strength previousShear plus a compressive bounded part; the next layer’s normal is read off that frame.',
+        remaining: 'That the invariants (shear, tilt, compression, small errors) pass to the next stage with summable losses, and that the horizons nest.',
       },
       inspect: `
+<p>In symbols: the strain at the origin is $M \\approx B + \\mathrm{previousShear}_n\\,(\\hat v\\otimes\\hat m)$ with a bounded part $\\|B\\|\\le G$ and the ray $m$ perpendicular to the velocity $v$; the compression condition at the activation time is $\\langle B\\hat m,\\hat m\\rangle \\lt 0$; the next layer is a plane wave whose normal the Lean reads off the frame as $\\hat m\\times\\hat v$, carried by the deformation (<code>joinedNormal</code>); and in equation (30) the tilt number is $\\beta\\approx 1/x_n^2$.</p>
 <p>The frame carried by each stage is the record <code>ParentFrame</code> (<code>PacketSourceGeometryData.lean</code>; the stage record is [[src:lean-euler-stage]]). Its fields, in words: a matrix path $B(t)$ with $\\|B\\|\\le G$; a ray $m(t)$ and a velocity $v(t)$ with</p>
 <p>$$m' = -B^{*}m,\\qquad v' = -Bv + \\frac{2\\langle m, Bv\\rangle}{|m|^2}\\,m,\\qquad \\langle m, v\\rangle = 0;$$</p>
 <p>and the <strong>remainder bound</strong>: at the packet centre the parent strain $M$ satisfies $\\|M - B - \\sigma\\,\\mathrm{rankOne}(\\hat v)(\\hat m)\\| \\le \\mathrm{error}$, with $\\sigma = \\mathrm{primaryShear} = c\\,|m|\\,|v|$. Since $\\mathrm{rankOne}(\\hat v)(\\hat m)\\,z = \\langle \\hat m, z\\rangle\\,\\hat v$, this says $Mz \\approx Bz + \\sigma\\langle\\hat m,z\\rangle\\hat v$: layers perpendicular to $\\hat m$ slide along $\\hat v$. A shear.</p>
@@ -217,28 +219,30 @@ theorem gradient_atTop (P : ∀ n, Stage S n) :
       question: 'How is the singular time pinned down?',
       visual: { scene: 'nested-horizons', label: 'formula-derived', caption: 'Activation times accumulate inside a shrinking nest of horizons below baseHorizon = 6J²X⁻⁴⁹⁸', params: { J: 3, log10X: 7.5, q: 1 } },
       status: {
-        changes: 'Each activation time is $t_{n+1} = t_n + x_{n+1}/\\sqrt{\\beta_n a_n\\,\\mathrm{previousShear}_n}$; the steps shrink faster than geometrically.',
-        bounded: 'All horizons: $t_n + 2\\,\\mathrm{timeWidth}_n \\le \\mathrm{baseHorizon} = 6J^2X^{-498} \\le 1$. Every stage lives inside the first interval.',
-        fails: 'A smooth solution up to $\\mathrm{baseHorizon}$: $H^3$ stability would bound the activation gradients, which diverge.',
+        changes: 'Each activation step is between a sixth and two thirds of the current time width; steps shrink faster than geometrically.',
+        bounded: 'Every horizon stays below baseHorizon, a fixed number at most 1; every stage lives inside the first interval.',
+        fails: 'A smooth solution up to baseHorizon: stability in three derivatives would bound the activation gradients, which diverge.',
       },
       understand: `
-<p>Every stage $n$ of the construction is a genuine smooth Euler solution on its own interval $[0,T_n]$, with $T_n = t_n + 2\\,\\mathrm{timeWidth}_n$, where $t_n$ is the time at which layer $n$ is switched on. The steps $t_{n+1}-t_n$ shrink so fast that each horizon fits inside the previous one. All activation times therefore stay below one number, $\\mathrm{baseHorizon} = 6J^2X^{-498}$, which is at most $1$.</p>
-<p>Now suppose the limiting data had a smooth solution all the way to $\\mathrm{baseHorizon}$. The stage-$n$ data converge to the limiting data in $H^3$, and $H^3$ stability of Euler would keep the stage-$n$ solutions close to the hypothetical one, including their velocity gradients at the origin at time $t_n$. But those gradients are at least $\\mathrm{previousShear}_n/2 \\to \\infty$. Contradiction: the maximal lifespan $T^*$ is at most $\\mathrm{baseHorizon}$.</p>
-<p>What $T^*$ is numerically, nobody knows. $J$ and $X$ come from an existence proof, and $T^*$ is defined as a supremum.</p>`,
+<p>Each stage is a real Euler solution on its own short time interval, and the intervals nest like Russian dolls below one fixed time, baseHorizon ≤ 1. A smooth solution lasting to baseHorizon would have to stay close to every stage, yet stage gradients grow without bound, so it cannot.</p>
+<p>Why do the intervals nest? Each step from one activation time to the next is at most two thirds of the current stage’s time width, and the widths at least halve from stage to stage. So the activation times pile up below the first horizon,</p>
+<p>$$\\mathrm{baseHorizon} = 6J^2X^{-498} \\le 1.$$</p>
+<p>Why can nothing smooth last that long? The layered data converge to the limiting data, and <span class="gloss" title="A theorem of Euler theory: initial data that are close, measured with three derivatives, give solutions that stay close for as long as both exist.">H³ stability</span> of Euler would keep each stage’s solution close to the hypothetical one, including its velocity gradient at the origin. Those gradients are at least half of <span class="gloss" title="The shear strength inherited from the earlier layers; the Lean calls it previousShear.">previousShear</span>, which grows without bound. Contradiction: the maximal lifespan $T^*$ is at most baseHorizon.</p>
+<p>What it is numerically, nobody knows: J and X come from an existence proof, and the lifespan is defined as a <span class="gloss" title="The least upper bound: here, the largest time such that a smooth solution exists on every shorter interval.">supremum</span>.</p>`,
       stage: {
         need: 'A single finite time by which every stage’s growth has already happened, so that one hypothetical solution can be compared with all stages.',
         whyNot: 'Each stage is a solution on its own horizon; without nesting, the activation times could march off to infinity and prove nothing.',
-        ingredient: 'Steps $t_{n+1}-t_n = \\mathrm{timeWidth}_n/(3\\sqrt{q_n})$ with widths at least halving, so all horizons sit inside $[0,\\mathrm{baseHorizon}]$, $\\mathrm{baseHorizon}\\le 1$.',
-        remaining: 'That the maximal solution really breaks down at $T^*$ in the Beale–Kato–Majda sense, not merely in the Sobolev class: the last scene.',
+        ingredient: 'Each step to the next activation is at most two thirds of the current time width, and the widths at least halve; so every horizon sits inside the first.',
+        remaining: 'That the maximal solution really breaks down at the singular time in the Beale–Kato–Majda sense, not merely in the construction’s solution class: the last scene.',
       },
       inspect: `
-<p>Definitions ([[src:lean-euler-horizons]]), with $a_n, \\beta_n$ the frame’s coupling and tilt numbers:</p>
+<p>Definitions ([[src:lean-euler-horizons]]), with $a_n, \\beta_n$ the frame’s coupling and tilt numbers (the scene’s slider $q$ stands in for all of them):</p>
 <p>$$\\mathrm{step}_n = \\frac{x_{n+1}}{\\sqrt{\\beta_n a_n\\,\\mathrm{previousShear}_n}},\\qquad t_n = \\sum_{i\\lt n}\\mathrm{step}_i,\\qquad T_n = t_n + 2\\,\\mathrm{timeWidth}_n,\\qquad \\mathrm{timeWidth}_n = \\frac{3x_{n+1}x_n}{\\sqrt{\\mathrm{previousShear}_n}}.$$</p>
 <p>The Lean hypothesises $\\tfrac12\\le a_n\\le 2$ and $\\tfrac12\\le\\beta_n x_n^2\\le 2$; in a stage, $a_n$ is <code>frame.a</code> and $\\beta_n$ is <code>frame.sigma²</code> (<code>Stage.step</code>), guaranteed by <code>coupling_bounds</code> and <code>tilt_lower/upper</code>. Writing $q_n = a_n\\beta_n x_n^2$, $\\mathrm{step}_n = \\mathrm{timeWidth}_n/(3\\sqrt{q_n})$, hence $\\mathrm{timeWidth}_n/6 \\le \\mathrm{step}_n \\le 2\\,\\mathrm{timeWidth}_n/3$ (<code>stepLength_bounds</code>). With the width-halving guard <code>next_width : timeWidth (n+1) ≤ timeWidth n / 2</code>, the horizons nest (<code>horizonTime_antitone</code>) below $\\mathrm{horizonTime}\\,0 = 2\\,\\mathrm{timeWidth}_0 = \\mathrm{baseHorizon}$ (<code>baseHorizon_eq_timeWidth</code>), and $t_n \\ge \\mathrm{baseHorizon}/12$ for $n\\ge1$ (<code>activationTime_lower</code>; the stage field <code>time_lower</code>).</p>
 <h3>Why $X$ must be enormous</h3>
 <p>For $n=0$ the halving condition reads, from the formulas, $\\ln\\frac{x_2}{x_0} + 500\\ln X + \\ln 2 \\le \\frac{X}{2J^5}$, because $\\mathrm{previousShear}_0 = X^{1000}$ while $\\mathrm{previousShear}_1 = e^{X/J^5}$. For $J=3$ this needs $X \\gtrsim 3.7\\times10^6$ (it involves neither $a_n$ nor $\\beta_n$: independent of the placeholder $q$). That is arithmetic on the Lean definitions, not a Lean statement; the Lean records only the floor <code>x_large : 8 ≤ X</code> and obtains the actual $D$, $J$, $\\delta$, $X$ in turn from eventual bounds (<code>exists_scales</code>), then fixes them by <code>Classical.choice</code> (<code>constructionScales</code>). The base horizon $6J^2X^{-498}$ is then unimaginably small, and the scene prints it as a power of ten.</p>
 <h3>The contradiction</h3>
-<p><code>false_of_evolution</code>: let $U$ solve Euler on $[0,\\mathrm{baseHorizon}]$ with $U(0)=u_0$, and let $V_n$ be the stage-$n$ solution on $[0,T_n]$, $T_n\\le\\mathrm{baseHorizon}$. Restrict $U$ to $[0,T_n]$. The $H^3$ norm of $V_n(0)-u_0$ tends to $0$ (<code>initialDatum_Hm</code> with $s=3$). The varying-horizon stability theorem <code>no_gradient_escape_of_initial_tendsto_varying</code> then forbids $\\|\\nabla V_n(t_n)(0)\\|\\to\\infty$. But that quantity is <code>activationGradient</code>, which does tend to infinity (<code>gradient_atTop</code>). Hence <code>initialDatum_no_base</code>.</p>
+<p><code>false_of_evolution</code>: let $U$ solve Euler on $[0,\\mathrm{baseHorizon}]$ with $U(0)=u_0$, and let $V_n$ be the stage-$n$ solution on $[0,T_n]$, $T_n\\le\\mathrm{baseHorizon}$. Restrict $U$ to $[0,T_n]$. The $H^3$ norm (velocity and its first three derivatives, in mean square) of $V_n(0)-u_0$ tends to $0$ (<code>initialDatum_Hm</code> with $s=3$). The varying-horizon stability theorem <code>no_gradient_escape_of_initial_tendsto_varying</code> then forbids $\\|\\nabla V_n(t_n)(0)\\|\\to\\infty$. But that quantity is <code>activationGradient</code>, which does tend to infinity (<code>gradient_atTop</code>). Hence <code>initialDatum_no_base</code>.</p>
 <p>From a local solution (<code>initialDatum_local</code>) and this failure, <code>exists_finite_lifespan</code> builds the record <code>FiniteLifespan</code> with $T^* = \\sup\\{T : \\text{a smooth solution exists on }[0,T]\\}\\le\\mathrm{baseHorizon}\\le 1$. The endpoint itself is excluded afterwards: any solution on a closed interval extends a little (<code>exists_extension</code>: local existence from the endpoint state, then concatenation), so a solution on $[0,T^*]$ would contradict maximality (<code>no_endpoint</code>).</p>
 <details class="more"><summary>The record, verbatim</summary><pre>structure FiniteLifespan (A : SmoothL2Field Space) where
   duration : ℝ
@@ -312,18 +316,20 @@ theorem lifespan_le_one : lifespan.duration ≤ 1</pre>` },
       question: 'Why is this a genuine singularity and not an artifact of the solution class?',
       visual: { scene: 'bkm-integral', label: 'formula-derived', caption: 'A model vorticity blowup (T*−t)^−γ and its time integral: the Beale–Kato–Majda dividing line', params: { gamma: 1 } },
       status: {
-        changes: 'As $t \\to T^*$ the gradient supremum exceeds every bound infinitely often; the vorticity integral $\\int_0^{T^*}\\norm{\\omega}_{\\Linf}$ is $+\\infty$.',
-        bounded: 'Kinetic energy, exactly conserved: $\\norm{v(t)}_{L^2}^2 = \\norm{u_0}_{L^2}^2$ for $t \\lt T^*$; and every norm on every $[0,T]$ with $T \\lt T^*$.',
+        changes: 'Approaching the singular time, the largest velocity gradient exceeds every bound infinitely often; the vorticity integral is infinite.',
+        bounded: 'Kinetic energy, exactly conserved for the whole lifespan; and every norm on every closed interval short of the singular time.',
         fails: 'Continuation. A finite gradient integral would extend the solution to the closed interval; the extension would contradict maximality.',
       },
       understand: `
-<p>Could the solution be continued past $T^*$ by someone cleverer, or in a slightly different class? The Beale–Kato–Majda criterion (1984) says: a smooth Euler solution on $[0,T)$ extends past $T$ unless $\\int_0^{T}\\norm{\\omega(t)}_{\\Linf}\\dd t = \\infty$, where $\\omega$ is the vorticity. The theorem proves exactly this integral is infinite, and that $\\sup|\\nabla v|$ exceeds every bound as $t\\to T^*$. So $T^*$ is not an artifact of asking for too much smoothness: the one quantity whose finiteness would permit continuation is infinite.</p>
-<p>A second clause closes another exit: there is no global smooth solution with bounded energy in the Comparator’s class either. Any such solution would agree with the constructed one by uniqueness; its vorticity stays inside a fixed ball, hence is bounded on compact time intervals, contradicting the infinite integral.</p>
-<p>Not claimed: a blowup rate, a profile, pointwise vorticity blowup, or anything about weak continuation. The exponent $\\gamma$ in the scene is yours to choose; the theorem only says “the integral is infinite”.</p>`,
+<p>Could someone cleverer continue the solution past the singular time, or in a different class of solutions? The Beale–Kato–Majda criterion (1984; BKM for short) says that a smooth Euler solution extends past a time unless one specific quantity is infinite there: the time integral of the largest <span class="gloss" title="The local spinning rate of the fluid, the curl of the velocity; written ω.">vorticity</span>,</p>
+<p>$$\\int_0^{T^*}\\norm{\\omega(t)}_{\\Linf}\\dd t = \\infty.$$</p>
+<p>The theorem proves exactly this integral is infinite, and that the largest velocity gradient exceeds every bound as the singular time approaches. So this is not an artifact of asking for too much smoothness: the one quantity whose finiteness would permit continuation is infinite.</p>
+<p>A second clause closes another exit: there is no global smooth solution with bounded energy in the <span class="gloss" title="The independent reference statement against which the Lean theorem is checked; chapter 4 describes it.">Comparator</span>’s class either ([[scene:verification/is-it-the-same-statement|chapter 4]]). Any such solution would agree with the constructed one by uniqueness; its vorticity stays inside a fixed ball, hence bounded on closed time intervals, contradicting the infinite integral.</p>
+<p>Not claimed: a blowup rate, a profile, pointwise vorticity blowup, or anything about weak continuation. The exponent γ in the scene is yours to choose; the theorem only says “the integral is infinite”.</p>`,
       stage: {
-        need: 'Assurance that $T^*$ is a real singularity: no continuation by any smooth solution, in the construction’s class or in the Comparator’s global class.',
-        whyNot: 'Maximality in a Sobolev class only says the construction’s own method stops; a cleverer class might, in principle, go on.',
-        ingredient: 'The Beale–Kato–Majda mechanism: a finite $\\int\\norm{\\omega}_{\\Linf}$ would bound $\\int\\norm{\\nabla u}_{\\Linf}$ through the logarithmic estimate and extend the solution; hence both diverge.',
+        need: 'Assurance that the singular time is real: no continuation by any smooth solution, in the construction’s class or in the Comparator’s global class.',
+        whyNot: 'Maximality in one solution class only says the construction’s own method stops; a cleverer class might, in principle, go on.',
+        ingredient: 'The Beale–Kato–Majda mechanism: a finite vorticity integral would bound the gradient integral through a logarithmic estimate and extend the solution; hence both diverge.',
         remaining: 'Nothing, for the theorem. Open: rate, profile, pointwise vorticity blowup, weak continuation, and any relevance to Navier–Stokes.',
       },
       inspect: `
@@ -337,7 +343,7 @@ theorem lifespan_le_one : lifespan.duration ≤ 1</pre>` },
 <h3>The Comparator’s global class</h3>
 <p>Let $(v,p)$ be a global smooth bounded-energy solution in the reference class <code>EulerExistenceAndSmoothnessR3</code>. Its initial vorticity is compactly supported, so for a short time it is an ordinary <code>Evolution</code> (<code>compactCurlLocalUpgrade</code>), and uniqueness identifies it with the maximal solution on all of $[0,T^*)$ (<code>maximalVelocity_eq_of_compactCurlLocalUpgrade</code>). The maximal solution’s vorticity stays in the ball of radius $2 + \\mathrm{particleDisplacementCap}$ (<code>canonical_vorticity_support</code>). A jointly smooth global solution has bounded vorticity on a compact set times $[0,T^*]$ (<code>vorticity_bounded_on_compact</code>), so $\\int_0^{T^*}\\norm{\\omega}_{\\Linf}$ would be finite: contradiction (<code>finiteLifespan_contradiction_of_compact_vorticity</code>).</p>
 <details class="more"><summary>The model in the scene</summary>
-<p>$\\int_0^{T^*}(T^*-t)^{-\\gamma}\\dd t$ is finite exactly when $\\gamma\\lt1$. The theorem proves the integral infinite but names no $\\gamma$ and no power law; the real $\\norm{\\omega(t)}_{\\Linf}$ need not even tend to infinity for its integral to diverge, and the Lean says nothing about its pointwise behaviour.</p></details>
+<p>$\\int_0^{T^*}(T^*-t)^{-\\gamma}\\dd t$ is finite exactly when $\\gamma\\lt1$. The theorem proves the integral infinite but names no $\\gamma$ and no power law; the real $\\norm{\\omega(t)}_{\\Linf}$ need not even tend to infinity for its integral to diverge, and the Lean says nothing about its pointwise behaviour. The scene’s “verdict” readout judges this model only.</p></details>
 <details class="more"><summary>The two norms, as the reference defines them</summary>
 <pre>noncomputable def velocityC1Norm (v : ℝ³ → ℝ³) : ℝ≥0∞ :=
   (⨆ x, ENNReal.ofReal ‖v x‖) + (⨆ x, ENNReal.ofReal ‖fderiv ℝ v x‖)
