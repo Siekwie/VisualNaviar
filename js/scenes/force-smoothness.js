@@ -9,7 +9,9 @@
 // Schematic parts: the shaded collapsing core inside the velocity box. The residual itself is not computed.
 import { theme, labelPill } from '../scene-runtime.js';
 import { cutoff } from './error-ledger.js';
-import { hexA } from './similarity-zoom.js';
+import { hexA, fitText } from './similarity-zoom.js';
+
+const TITLE = ['Space-time support of the fields and of the force  (hover or click a region)', 'Space-time support of fields and force (hover a region)', 'Supports of fields and force'];
 
 const timeSwitch = (t) => 1 - cutoff((4 / 3) * t);
 const timeCutoff = (t) => cutoff((8 / 5) * (t - 11 / 16));
@@ -81,18 +83,18 @@ export default {
       labelPill(ctx, '(1, 0): residual jets → 0, |u| → ∞', px.x + px.w - 6, RY(0) - 8, { color: th.bad, size: 10, align: 'right' });
       labelPill(ctx, 't = 1, x ≠ 0: one-sided extension', px.x + px.w - 6, RY(0.33), { color: th.ok, size: 10, align: 'right' });
       labelPill(ctx, periodic ? 'Borel extension, zero for t ≥ 2' : 'Borel extension, cut off at 21/16', px.x + px.w - 6, RY(0.45), { color: th.ok, size: 10, align: 'right' });
-      labelPill(ctx, periodic ? 'u, p: [0,1) × K in each period cell,  K = {r² ≤ 1/16, |z| ≤ 1/4}' : 'u, p: [0,1) × K,  K = {r² ≤ 1/16, |z| ≤ 1/4}', TX(0.02), RY(0.25) - 10, { color: th.accent, size: 10 });
+      labelPill(ctx, fitText(ctx, [periodic ? 'u, p: [0,1) × K in each period cell,  K = {r² ≤ 1/16, |z| ≤ 1/4}' : 'u, p: [0,1) × K,  K = {r² ≤ 1/16, |z| ≤ 1/4}', 'u, p: [0,1) × K'], px.x + px.w - TX(0.02) - 8, `600 10px ${th.sans}`, 12), TX(0.02), RY(0.25) - 10, { color: th.accent, size: 10 });
       labelPill(ctx, 'rest: u = p = 0', TX(0.03), RY(0.12), { color: th.accent, size: 9.5 });
       labelPill(ctx, 'ramp', TX(0.4), RY(0.12), { color: th.accent, size: 9.5 });
-      labelPill(ctx, periodic ? 'force f: periodic in x, zero for t ≤ 0 and t ≥ 2' : 'f: supp ⊆ [1/16, 21/16] × 2K  (2K: r ≤ 1/2, |z| ≤ 1/2)', TX(periodic ? 0.02 : 1 / 16 + 0.02), RY(periodic ? 0.6 : 0.5) + 12, { color: th.warn, size: 10 });
-      labelPill(ctx, 'f = residual of the activated fields on (0, 1)', TX(0.4), RY(0.4), { color: th.warn, size: 10 });
+      { const fx = TX(periodic ? 0.02 : 1 / 16 + 0.02); labelPill(ctx, fitText(ctx, [periodic ? 'force f: periodic in x, zero for t ≤ 0 and t ≥ 2' : 'f: supp ⊆ [1/16, 21/16] × 2K  (2K: r ≤ 1/2, |z| ≤ 1/2)', periodic ? 'f: zero for t ≤ 0 and t ≥ 2' : 'f: supp ⊆ [1/16, 21/16] × 2K'], px.x + px.w - fx - 8, `600 10px ${th.sans}`, 12), fx, RY(periodic ? 0.6 : 0.5) + 12, { color: th.warn, size: 10 }); }
+      labelPill(ctx, 'f = residual of the activated fields on (0, 1)', TX(0.4), RY(0.37), { color: th.warn, size: 10 });
       // axes
       ctx.strokeStyle = th.lineStrong; ctx.lineWidth = 1; ctx.strokeRect(px.x + 0.5, px.y + 0.5, px.w - 1, px.h - 1);
       ctx.fillStyle = th.muted; ctx.font = `10.5px ${th.sans}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       for (const [t, lab] of [[0, '0'], [1 / 16, '1/16'], [3 / 8, '3/8'], [3 / 4, '3/4'], [1, '1'], [21 / 16, '21/16'], [1.5, '1.5']]) { ctx.fillText(lab, TX(t), px.y + px.h + 4); }
       ctx.save(); ctx.translate(14, px.y + px.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('distance from the axis  r = |(x₀, x₁)|', 0, 0); ctx.restore();
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText('1/4', px.x - 4, RY(0.25)); ctx.fillText('1/2', px.x - 4, RY(0.5)); ctx.fillText('0', px.x - 4, RY(0));
-      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Space-time support of the fields and of the force  (hover or click a region)', px.x, 6);
+      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(fitText(ctx, TITLE, px.w, `600 12px ${th.sans}`), px.x, 6);
       // bottom strip: the two time functions
       const sy = px.y + px.h + 24, sh = stripH - 8;
       ctx.fillStyle = th.bg; ctx.fillRect(px.x, sy, px.w, sh); ctx.strokeStyle = th.line; ctx.strokeRect(px.x + 0.5, sy + 0.5, px.w - 1, sh - 1);
@@ -101,7 +103,7 @@ export default {
       const plot = (f, color, dash) => { ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash(dash || []); ctx.beginPath(); for (let i = 0; i <= 300; i++) { const t = T0 + (i / 300) * (T1 - T0); const x = TX(t), y = FY(f(t)); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); } ctx.stroke(); ctx.setLineDash([]); };
       plot(timeSwitch, th.accent); if (!periodic) plot(timeCutoff, th.warn, [5, 3]);
       labelPill(ctx, 'timeSwitch: 0 for |t| ≤ 3/8, 1 for t ≥ 3/4', px.x + 6, FY(1) + 4, { color: th.accent, size: 9.5 });
-      if (!periodic) labelPill(ctx, 'timeCutoff: 1 on [3/8, 1], 0 outside [1/16, 21/16]', px.x + px.w - 6, FY(0.75), { color: th.warn, size: 9.5, align: 'right' });
+      if (!periodic) labelPill(ctx, 'timeCutoff: 1 on [3/8, 1], 0 outside [1/16, 21/16]', px.x + px.w - 6, FY(0.3), { color: th.warn, size: 9.5, align: 'right' });
       for (const t of [3 / 8, 3 / 4, 1, 21 / 16]) { ctx.strokeStyle = th.line; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(TX(t), sy); ctx.lineTo(TX(t), sy + sh); ctx.stroke(); ctx.setLineDash([]); }
     };
     ui.loop(() => draw());

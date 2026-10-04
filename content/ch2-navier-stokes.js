@@ -69,17 +69,19 @@ export default {
       visual: { scene: 'similarity-zoom', label: 'formula-derived', caption: 'Physical coordinates (r, z) and similarity coordinates (X, \u03b7) of the collapsing base, side by side', params: { h: 0.08, XL: 0.5, XR: 3 } },
       status: {
         changes: 'Axis speed $j(1-t)^{-(1/2+h)}$; core waist $\\propto\\sqrt{1-t}$; axial scale $\\propto (1-t)^{1/2-h}$. The vortex becomes a slender filament.',
-        bounded: 'Everything in $(X,\\eta)$: regions, profile, cone data. Far outside the annulus the base is a radial heat solution with explicit pressure.',
+        bounded: 'Everything in $(X,\\eta)$: regions, profile, cone data. Far outside the active annulus the base is an explicit heat solution.',
         fails: 'Exactness. The base alone is not a solution; its residual, living in the active annulus, is repaired next.',
       },
       understand: `
-<p>Stand at the point where the singularity will form and shrink your ruler as time runs out. In the right ruler the collapsing vortex stops moving. That is what <strong>self-similar</strong> means, and it is how the construction describes its base flow.</p>
-<p>The Lean construction uses a scale $q$ that solves $q - z^2 q^{2h} = 1 - t$. On the symmetry plane $q$ is simply the time left. Radial distances are measured by $X = r^2/(2q)$, so the core width shrinks like $\\sqrt{1-t}$; axial distances by $\\eta = z/q^{1/2-h}$, so the length shrinks slightly more slowly. Speeds grow like $q^{-(1/2+h)}$: a little faster than Leray\u2019s natural rate, by the tiny exponent $h$.</p>
-<p>In these coordinates the base has three fixed regions: a <em>core</em> around the axis where only the base acts and the speed blows up, an <em>active annulus</em> where every later correction will live, and an <em>exterior</em> where only the base remains and which, far enough out, is an explicit heat solution. Move the time slider: the left picture pinches, the right one does not.</p>`,
+<p>Stand where the singularity will form and shrink your ruler as time runs out. With the right ruler the collapsing vortex stops moving. That is what <strong>self-similar</strong> means, and it is how the construction describes its base.</p>
+<p>The Lean measures distance from the axis in units of the shrinking core (the scene’s X) and height in units of the shrinking length (η). In those units the core keeps its width, the picture freezes, and only the speed scale grows, slightly faster than the classical <span class="gloss" title="The slowest blowup rate the equations allow, found by Leray in 1934: the peak speed must grow at least like one over the square root of the time left.">Leray rate</span> by a tiny exponent h. On the axis the formalization fixes the speed exactly:</p>
+<p>$$|u(t,0)| = j\\,(1-t)^{-(1/2+h)},$$</p>
+<p>with h and the amplitude j tiny positive constants, abstract in the Lean.</p>
+<p>In these coordinates the base has three fixed regions: a <em>core</em> around the axis, where only the base acts and the speed blows up; an <em>active annulus</em>, where every later correction will live; and an <em>exterior</em>, where only the base remains and which, far out, is an explicit heat solution. Move the time slider: the left picture pinches, the right one does not.</p>`,
       inspect: `
 <p>The Lean works in cylindrical data $(t, s, z)$ with $s = (x_0^2 + x_1^2)/2 = r^2/2$ and never divides by $r$. Its similarity coordinate is the unique $q \\gt 0$ with</p>
 <p>$$q - z^2 q^{2h} = 1 - t, \\qquad X = \\frac{s}{q} = \\frac{r^2}{2q}, \\qquad \\eta = \\frac{z}{q^{(1-2h)/2}},$$</p>
-<p>and its two exponents are $A = \\tfrac12 + h$ and $D = \\tfrac12 - h$, with $A + D = 1$. The docstring calls this \u201cEquation (3), with exactly the manuscript\u2019s exponent $2h$.\u201d Dividing the defining relation by $q$ gives $\\eta^2 = 1 - (1-t)/q$, so $|\\eta| \\lt 1$ always, and for fixed $z \\ne 0$ the scale $q$ tends to a positive limit as $t \\to 1$: only the origin collapses. Far from the symmetry plane the level sets of $X$ are time-frozen and nearly conical ($r \\propto |z|^{1/(1-2h)}$); near it they pinch to a waist of radius $\\sqrt{2Xq}$. That is the hourglass in the scene.</p>
+<p>and its two exponents are $A = \\tfrac12 + h$ and $D = \\tfrac12 - h$, with $A + D = 1$. The docstring calls this \u201cEquation (3), with exactly the manuscript\u2019s exponent $2h$.\u201d Dividing the defining relation by $q$ gives $\\eta^2 = 1 - (1-t)/q$, so $|\\eta| \\lt 1$ always, and for fixed $z \\ne 0$ the scale $q$ tends to a positive limit as $t \\to 1$: only the origin collapses. Far from the symmetry plane the level sets of $X$ are time-frozen and nearly conical ($r \\propto |z|^{1/(1-2h)}$); near it they pinch to a waist of radius $\\sqrt{2Xq}$. That is the hourglass in the scene. On the symmetry plane $z = 0$ the scale is simply $q = 1 - t$: a fixed $X$ is a waist of radius $\\sqrt{2X(1-t)}$, a fixed $\\eta$ a height $|\\eta|\\,(1-t)^{1/2-h}$, and velocities carry $q^{-A} = q^{-(1/2+h)}$, Leray’s $(1-t)^{-1/2}$ sharpened by the exponent $h$. These are the scene’s readouts.</p>
 <h3>The base</h3>
 <p>The base velocity is a Euclidean curl, <code>AxisymmetricFields.velocity (streamFactor) (swirlPotential)</code>, of an axisymmetric potential with a meridional stream and a swirl component. Each profile is restored to physical scale by a fixed power of $q$: the stream factor carries $q^{-A}$, the swirl potential $q^{1/2 - A} = q^{-h}$, the pressure $q^{-2A}$. The profiles themselves are <em>slow Borel series</em> in the similarity variables,</p>
 <p>$$f_0(X,\\eta) + \\sum_{j \\ge 1} \\chi(a_j q)\\, q^{2hj} f_j(X,\\eta),$$</p>
@@ -95,8 +97,8 @@ export default {
       stage: {
         need: 'A flow whose own nonlinearity drives the collapse, with a speed that becomes infinite at one point at one time, in a frame where the picture is frozen.',
         whyNot: 'The stretched-vortex model needed a strain imposed by hand, and the planar swirl had no stretching at all. Neither flow feeds back on itself.',
-        ingredient: 'An axisymmetric self-similar base with swirl and axial outflow, written in the coordinates $(X, \\eta)$ and scaled by $q^{-(1/2+h)}$, slightly faster than Leray scaling.',
-        remaining: 'The base is not an exact solution: its residual, concentrated in the active annulus, must be cancelled. And $h$, $j$ and the profile are abstract choices in the Lean.',
+        ingredient: 'An axisymmetric self-similar base with swirl and axial outflow, written in the frozen coordinates and scaled up slightly faster than the Leray rate.',
+        remaining: 'The base is not an exact solution: its residual, concentrated in the active annulus, must be cancelled. The exponent, the amplitude and the profile stay abstract in the Lean.',
       },
       verify: {
         statements: [
@@ -148,9 +150,9 @@ export default {
         fails: 'No finite number of cycles suffices. Each leaves a smaller error; the schedule $a_j$ must keep the infinite sum smooth.',
       },
       understand: `
-<p>Insert the base into Navier\u2013Stokes and something is left over: a <strong>residual</strong>, living in the active annulus. The construction does not kill it in one stroke. It repays it in instalments.</p>
-<p>Each <em>correction cycle</em> adds a small field designed to cancel the leading part of the current residual, and leaves behind a new residual that is smaller by a definite power of the scale $q$. The Lean keeps the books in an exponent ledger: after $J$ cycles the booked accuracy is $\\sigma_J = \\tfrac15 + \\tfrac{J}{10}$, and near the singular point the residual is smaller by the factor $q^{hJ/10}$. Each wave step actually gains $\\tfrac25$, more than the $\\tfrac1{10}$ it is charged.</p>
-<p>Because $h$ is tiny, each instalment is tiny, so infinitely many are needed. Stage $j$ is switched on only once $q$ is small enough, through a cutoff $\\chi(a_j q)$ with $a_j$ growing at least geometrically. At any fixed time only finitely many stages are active, yet every cutoff equals one near the singular point. The residual magnitudes themselves are not computed here.</p>`,
+<p>Insert the base into Navier–Stokes and something is left over: [[scene:concentration/not-yet-a-proof|the residual]], the part of the equation the base fails to balance, in the active annulus. The construction does not kill it in one stroke. It repays it in instalments.</p>
+<p>Each <em>correction cycle</em> adds a small field that cancels the leading part of the current residual and leaves a new one, smaller by a definite power of the shrinking scale q. The formalization keeps the books in an exponent ledger: each cycle is charged one tenth of an exponent (after J cycles, one fifth plus J tenths), while each wave step actually gains two fifths. Near the singular point the residual shrinks by the factor $q^{hJ/10}$.</p>
+<p>Because h is tiny, each instalment is tiny, so infinitely many are needed. Cycle J is the J-th repair; stage j is that repair once the cutoff $\\chi(a_j q)$ switches it on, at small enough q. At any fixed time only finitely many stages are active, yet every cutoff equals one near the singular point. No residual magnitude is computed here.</p>`,
       inspect: `
 <p>The residual is the project\u2019s own definition, at viscosity one:</p>
 <p>$$R[u,p](t,x) = \\partial_t u + (u\\cdot\\nabla)u - \\Delta u + \\nabla p .$$</p>
@@ -166,9 +168,9 @@ export default {
 <p>The estimates that justify each gain are the bulk of the formalization: <code>CorrectionStep.lean</code> alone is 9,849 lines, and the import closure of the assembled candidate exceeds 360,000 lines. This chapter reports their interfaces (the ledger, the schedule, the residual-limit hypotheses) and quotes their docstrings; it does not reproduce the estimates.</p></details>`,
       stage: {
         need: 'A residual whose every derivative tends to zero at the singular point and extends smoothly at every other terminal point, so that it can serve as the force.',
-        whyNot: 'The base alone leaves a residual of fixed relative size in the active annulus; nothing makes it vanish as $t \\to 1$.',
-        ingredient: 'An iteration (particular wave, signed wave, five-row mean update per cycle), each cycle gaining a power of $q$, summed through the diagonal cutoffs $\\chi(a_j q)$.',
-        remaining: 'How fast oscillations can cancel a slow error at all, and why the infinite sum is still smooth at $t = 1$. The next two scenes.',
+        whyNot: 'The base alone leaves a residual of fixed relative size in the active annulus; nothing makes it vanish as the singular time approaches.',
+        ingredient: 'An iteration (particular wave, signed wave, five-row mean update per cycle), each cycle gaining a power of the scale, summed through the staged cutoffs.',
+        remaining: 'How fast oscillations can cancel a slow error at all, and why the infinite sum is still smooth at the singular time. The next two scenes.',
       },
       verify: {
         statements: [
@@ -219,11 +221,11 @@ export default {
         fails: 'Bracketing can fail: a target stress outside the cone spanned by the two signed slots has no positive-amplitude solution.',
       },
       understand: `
-<p>How can a wiggle cancel something smooth? Through the square. Navier\u2013Stokes is quadratic in the velocity, and the square of a fast oscillation is not fast:</p>
+<p>How can a wiggle cancel something smooth? Through the square. Navier–Stokes is quadratic in the velocity, and the square of a fast oscillation is not fast. Write the wave as a slow amplitude times a fast <span class="gloss" title="The rapidly oscillating factor of a wave, here cos κΦ with frequency κ; the Lean uses this name.">carrier</span>:</p>
 <p>$$(a\\cos\\kappa\\Phi)^2 = \\tfrac{a^2}{2} + \\tfrac{a^2}{2}\\cos 2\\kappa\\Phi .$$</p>
-<p>The first term is slow and can be shaped to cancel a slow residual; the second oscillates twice as fast and, after one integration, is smaller by $1/\\kappa$. Raise $\\kappa$ in the scene and watch the dashed curve collapse while the mean does not move.</p>
-<p>A velocity correction enters the equation through its <strong>stress</strong>, the quadratic covariance of the wave, and that is the quantity the construction controls. Because squared amplitudes are nonnegative, one wave can push the stress only one way. The Lean therefore uses two <em>signed slots</em> whose columns bracket the target: the target lies between them exactly when $|at| \\lt bm$, and then both squared amplitudes come out positive.</p>
-<p>This scene is the generic mechanism. The construction\u2019s waves are far more structured.</p>`,
+<p>The first term is slow and can be shaped to cancel a slow residual; the second oscillates twice as fast and, after one integration, shrinks in proportion to one over the frequency. Raise the frequency in the scene and watch the dashed curve collapse while the mean does not move.</p>
+<p>A velocity correction enters the equation through its <strong>stress</strong>, the averaged product of the wave with itself (its <span class="gloss" title="The average of the product of two wave components; for a wave with itself, the mean of its square.">covariance</span>), the quantity the construction controls. A square is never negative, so one wave can push the stress only one way. The Lean therefore uses two <em>signed slots</em> pushing to either side and requires the target to lie between them, the <span class="gloss" title="The target must lie inside the wedge (cone) spanned by the two slot directions; in the scene’s labels, |at| &lt; bm.">cone condition</span>; then both squared amplitudes come out positive.</p>
+<p>This scene is the generic mechanism. The construction’s waves are far more structured.</p>`,
       inspect: `
 <p>Let $w = a(x)\\cos(\\kappa\\Phi(x))$ with $a$ and $\\Phi$ slowly varying and $\\kappa$ large. The nonlinear term of Navier\u2013Stokes is quadratic, so what matters is $w\\otimes w$, whose scalar shadow is $w^2 = \\tfrac{a^2}{2} + \\tfrac{a^2}{2}\\cos 2\\kappa\\Phi$. The mean $\\tfrac{a^2}{2}$ is slow: choosing $a = \\sqrt{2R}$ cancels a nonnegative slow target $R$. The remainder is a pure oscillation; integrating it once against a slow function gains a factor $1/\\kappa$ (the scene computes $\\int_0^x$ of the leftover by the trapezoid rule and reports its maximum, which scales like $\\max(a^2/2)/(4\\pi\\kappa)$ for $\\Phi = 2\\pi x$). This is the sense in which a wave correction trades a slow error of size one for a fast error that is small after integration; the <em>linear</em> terms acting on the wave are what the particular and signed solves handle.</p>
 <h3>The Lean\u2019s vocabulary</h3>
@@ -235,7 +237,7 @@ export default {
       stage: {
         need: 'A correction that cancels the slow residual of the base without producing a new slow error of the same size.',
         whyNot: 'A slow correction feeds back on itself through the nonlinearity at full size; its own residual would be no smaller than the one it removes.',
-        ingredient: 'High-frequency waves $a\\,e^{i\\kappa\\Phi}$: the nonlinearity turns them into a controllable mean stress plus faster oscillations that lose $1/\\kappa$ per integration.',
+        ingredient: 'High-frequency waves: the nonlinearity turns them into a controllable mean stress plus faster oscillations that shrink by one over the frequency with each integration.',
         remaining: 'The actual waves live on a torus cover with many dyadic labels and Gaussian slot cutoffs; their estimates, and the ledger gains, are the bulk of the Lean.',
       },
       verify: {
@@ -281,10 +283,10 @@ export default {
         fails: 'Nothing, by construction: $f$ equals the residual on $(0, 1)$, so the equation holds by definition. Content: the limits.',
       },
       understand: `
-<p>Here is the definition that keeps the chapter honest. The force is not chosen and then matched; it is <strong>defined</strong> to be whatever the constructed velocity and pressure leave over. For $0 \\lt t \\lt 1$,</p>
+<p>Here is the definition that keeps the chapter honest. The force is not chosen and then matched; it is <strong>defined</strong> to be whatever the constructed velocity and pressure leave over, [[scene:concentration/not-yet-a-proof|the residual]] of chapter 1, at every time before the singular time one:</p>
 <p>$$f := \\partial_t u + (u\\cdot\\nabla)u - \\Delta u + \\nabla p .$$</p>
-<p>The equation then holds by definition, exactly as [[scene:concentration/not-yet-a-proof|chapter 1]] warned.</p>
-<p>So what is proved? That this residual is smooth, including at the one point where the velocity is not. As $t \\to 1^-$ the Lean shows two things: at the singular point $(1, 0)$ every derivative of the residual tends to zero, and at every other point of the terminal slice the residual has a smooth one-sided extension. These limits are the jets of the force at $t = 1$; Borel\u2019s lemma supplies a smooth function for $t \\gt 1$ with exactly these jets, and the force is glued across. It vanishes for $t \\ge 2$; in the whole-space case a further cutoff confines it to $1/16 \\le t \\le 21/16$ and to a cylinder. The flow starts from rest: $u = p = 0$ for $|t| \\le 3/8$.</p>`,
+<p>The equation then holds by definition, exactly as chapter 1 warned.</p>
+<p>So what is proved? That this residual is smooth, including at the one point where the velocity is not. Approaching time one, the Lean shows two things: at the singular point every derivative of the residual tends to zero; at every other point of the final slice the residual extends smoothly from one side. These limits are the <span class="gloss" title="All derivatives up to a given order, taken at one point.">jets</span> of the force at time one. <span class="gloss" title="A classical way to build a smooth function with prescribed derivatives at one point.">Borel’s lemma</span> supplies a smooth function for later times with exactly these jets, and the force is glued across. It vanishes from time two on; in the whole-space case a further cutoff confines it to the time window 1/16 to 21/16 and to a cylinder. The flow starts from rest: velocity and pressure vanish up to time 3/8.</p>`,
       inspect: `
 <p>The definition, from <code>CandidateFromLimits</code> (\u201cNo force is an input to this definition\u201d): take the time-switched fields, extend them by zero to negative times, form their residual on all of $t \\lt 1$ (<code>pastResidual</code>), fill in the terminal trace with the limit $L(x)(0)$ of the residual (<code>tracedResidual</code>), and set</p>
 <p>$$f := \\mathtt{SpacetimeGluing.smoothExtension}\\;1\\;(\\mathtt{tracedResidual}\\;u\\;p\\;L).$$</p>
@@ -303,9 +305,9 @@ export default {
 <details class="more"><summary>What \u201csmooth\u201d means here</summary>
 <p>$C^\\infty$ in the <code>ContDiff</code> scope means all finite orders of differentiability, not analyticity: \u201cThe <code>ContDiff</code> scope\u2019s $\\infty$ means all finite differentiability orders. In this Mathlib version $\\top$ would instead impose the stronger analytic order.\u201d The comparator\u2019s decay conditions are then derived from compact support (<code>forceConditionDecay_of_compact</code>).</p></details>`,
       stage: {
-        need: 'A force that is $C^\\infty$ on all of $\\R\\times\\R^3$, compactly supported in strictly positive time, and equal to the residual for $0 \\lt t \\lt 1$.',
-        whyNot: 'The corrections control the residual only for $t \\lt 1$. A function defined for $t \\lt 1$, however good, is not yet smooth across $t = 1$.',
-        ingredient: 'Limits of all residual derivatives at $t = 1$ (vanishing jets at the origin, one-sided extensions elsewhere), the Taylor\u2013Borel gluing, then time and outer cutoffs.',
+        need: 'A force that is smooth on all of space-time, compactly supported in strictly positive time, and equal to the residual before the singular time.',
+        whyNot: 'The corrections control the residual only before time one. A function defined only before time one, however good, is not yet smooth across it.',
+        ingredient: 'Limits of all residual derivatives at time one (vanishing jets at the origin, one-sided extensions elsewhere), the Taylor–Borel gluing, then time and outer cutoffs.',
         remaining: 'That the velocity has compact support and bounded energy, that no other solution exists, and that every viscosity is covered.',
       },
       verify: {
@@ -356,8 +358,10 @@ export default {
         fails: 'Nothing new: the cut fields keep their residual-jet limits, since every cutoff is one on the plateau around the singularity.',
       },
       understand: `
-<p>Energy is an integral over all of space, so before measuring it the construction confines the fields. A fixed cutoff $\\chi(x) = \\mathrm{cutoff}(16(x_0^2 + x_1^2))\\cdot\\mathrm{cutoff}(4x_2)$ is one on a small cylinder around the origin and zero outside a larger one. It multiplies the <em>potential</em> before the curl is taken, so the cut velocity is still divergence-free; the direct angular field and the pressure are cut directly. Whatever the cutoff spoils is, once more, simply added to the force.</p>
-<p>With compact support the energy identity closes: $E' = -2\\cdot\\text{dissipation} + 2\\!\\int u\\cdot f \\le E + C$, where $C$ bounds the force\u2019s squared $L^2$ norm. Gr\u00f6nwall then gives $\\|u(t)\\|^2 \\le C\\,e$ for all $t \\lt 1$, however wild the velocity becomes near the origin. That is the whole-space energy bound the theorem needs.</p>
+<p>Energy is an integral over all of space, so before measuring it the construction confines the fields. A fixed cutoff function vanishes outside a cylinder around the origin and is identically one inside a smaller one: the <em>plateau</em>, the region where the cutoff equals one, which contains the core. It multiplies the <em>potential</em> before the curl is taken, so the cut velocity is still divergence-free; the direct angular field and the pressure are cut directly. Whatever the cutoff spoils is, once more, simply added to the force.</p>
+<p>With compact support the energy identity closes: the energy changes at a rate equal to minus the dissipation plus the work done by the force, and that work is at most the energy itself plus a constant C bounding the squared <span class="gloss" title="The square root of the integral of the squared magnitude over space; for a velocity, the square root of twice the kinetic energy.">L² norm</span> of the force. <span class="gloss" title="A standard inequality that turns a growth bound into a bound on the solution.">Grönwall’s inequality</span> then gives</p>
+<p>$$\\|u(t)\\|^2 \\le C\\,e \\qquad \\text{for all } t \\lt 1,$$</p>
+<p>however wild the velocity becomes near the origin. That is the whole-space energy bound the theorem needs.</p>
 <p>The periodic theorem instead sums the cut fields over the integer lattice; it needs no energy bound at all, only periodicity.</p>`,
       inspect: `
 <p>From <code>SpatialLocalization</code>: \u201cThe fixed cutoff is a smooth function of $x_0^2 + x_1^2$ and $x_2$. It is one on an open cylinder containing the origin and has support strictly inside a unit period cube. We multiply the potential before taking any curl, and periodize the resulting potential by the actual locally finite lattice sum. The pressure is cut and periodized as a scalar.\u201d Concretely</p>
@@ -374,10 +378,10 @@ export default {
 <details class="more"><summary>The periodic case: periodize and compress</summary>
 <p>For the torus, the cut potential is summed over integer translates, <code>periodize f z = \u2211\' n, f (z.1, z.2 \u2212 n)</code>, a locally finite sum because the support lies strictly inside the unit cube. The periodic corollary first compresses the whole-space candidate so that all supports fit in the quarter cube $|x_i| \\le 1/4$: <code>pull a l g z = a \u2022 g (clock l z.1, l \u2022 z.2)</code> with the affine clock $l^2(t-1)+1$, which \u201csends time one to itself,\u201d and amplitudes $l$, $l^2$, $l^3$ for velocity, pressure and force. The periodic competitor class has \u201cno energy or pressure normalization,\u201d so no energy bound is needed there.</p></details>`,
       stage: {
-        need: 'Compact spatial support and one uniform bound for the kinetic energy on $[0,1)$, as <code>CandidateProperties</code> on $\\R^3$ demands.',
+        need: 'Compact spatial support and one uniform bound for the kinetic energy before time one, as <code>CandidateProperties</code> on the whole space demands.',
         whyNot: 'The raw fields are defined on all of space with no decay statement; their energy is not even known to be finite.',
-        ingredient: 'The cutoff on the potential (divergence preserved), the exact energy balance for compactly supported fields, Young\u2019s inequality and Gr\u00f6nwall\u2019s lemma.',
-        remaining: 'That no competing global solution exists, that the blowup survives the cutoffs, and that every $\\nu \\gt 0$ follows from $\\nu = 1$.',
+        ingredient: 'The cutoff on the potential (divergence preserved), the exact energy balance for compactly supported fields, Young’s inequality and Grönwall’s lemma.',
+        remaining: 'That no competing global solution exists, that the blowup survives the cutoffs, and that every viscosity follows from viscosity one.',
       },
       verify: {
         statements: [
@@ -439,14 +443,14 @@ export default {
         },
       },
       status: {
-        changes: 'The axis speed $j(1-t)^{-(1/2+h)} \\to \\infty$ survives the corrections, the cutoffs and the dilation; the $H^3$ norm follows it.',
+        changes: 'The axis speed $j(1-t)^{-(1/2+h)} \\to \\infty$ survives corrections, cutoffs and dilation; so does the $H^3$ (three-derivative Sobolev) norm.',
         bounded: 'Any hypothetical global smooth solution: continuous, hence bounded, on the compact set $[0,1]\\times K$.',
         fails: 'The hypothesis: no global smooth finite-energy ($\\R^3$) or smooth periodic (torus) solution for this force and zero data.',
       },
       understand: `
-<p>The theorem is a <strong>non-existence</strong> statement, reached by contradiction through uniqueness. The constructed solution $u$ is smooth on $[0,1)$ with zero initial data, solves the equation with the force $f$, and has unbounded speed as $t \\to 1$: the axis value $j(1-t)^{-(1/2+h)}$ is untouched by the corrections, which vanish near the axis, and by the cutoffs, which are one there.</p>
-<p>Suppose a global smooth solution $v$ existed for the same $f$ and the same zero data, in the class of the theorem: finite energy on $\\R^3$, or periodic on the torus. Uniqueness in that class forces $v = u$ on $[0,1)$. But $v$ is continuous on the compact set $[0,1]\\times K$, hence bounded there, while $u$ is not. Contradiction.</p>
-<p>Every viscosity follows from $\\nu = 1$ by a spatial dilation, not a limit: $\\sqrt{\\nu}\\,u(t, x/\\sqrt{\\nu})$ solves the equation with viscosity $\\nu$ and the same singular time. The periodic corollary compresses the whole-space fields into a quarter cube and sums over the lattice. This is why the solution class in [[scene:concentration/what-is-claimed|the statement]] matters: uniqueness is proved inside it.</p>`,
+<p>The theorem is a <strong>non-existence</strong> statement, reached by contradiction through uniqueness. The constructed solution is smooth before time one, starts from rest, and its speed is unbounded approaching time one: the axis speed of the self-similar vortex survives the corrections, which vanish near the axis, and the cutoffs, which are one there. Its <span class="gloss" title="A norm that measures a function together with its derivatives; H³ counts derivatives up to order three.">Sobolev norm</span> $H^3$ is unbounded too.</p>
+<p>Suppose a global smooth solution existed for the same force and zero data, in the theorem’s class: finite energy on the whole space, or periodic on the torus. Uniqueness in that class forces it to coincide with the constructed solution before time one. But it is continuous on a closed, bounded block of space-time, hence bounded there; the constructed solution is not. Contradiction.</p>
+<p>Every viscosity follows from viscosity one by a spatial dilation, not a limit: $\\sqrt{\\nu}\\,u(t, x/\\sqrt{\\nu})$ solves the equation with viscosity ν and the same singular time. The periodic corollary compresses the whole-space fields into a quarter cube and sums over the lattice. That is why the solution class in [[scene:concentration/what-is-claimed|the statement]] matters: uniqueness holds inside it.</p>`,
       inspect: `
 <p>The whole-space chain, with the Lean names:</p>
 <ol>
@@ -461,9 +465,9 @@ export default {
 <details class="more"><summary>Maximal lifespan, and what is not claimed</summary>
 <p><code>MaximalLifespan.candidate_is_maximal</code> and <code>theorem_1_1_with_maximalH3</code> state that classical ($H^3$) solutions with this force and zero datum exist on $[0,T]$ exactly for $T \\in (0,1]$: the lifespan is one, not less. Nothing is claimed about $u$ at or after $t = 1$, about weak solutions, or about the unforced equation; see [[scene:implications|chapter 5]].</p></details>`,
       stage: {
-        need: 'The theorem\u2019s conclusion: no global smooth solution in the stated class, for every $\\nu \\gt 0$, on $\\R^3$ and on the torus.',
+        need: 'The theorem’s conclusion: no global smooth solution in the stated class, for every positive viscosity, on the whole space and on the torus.',
         whyNot: 'A single blowing-up solution does not by itself exclude others: a different smooth solution with the same data and force might exist.',
-        ingredient: 'Uniqueness before time one inside the class, boundedness of continuous functions on compact sets, the $\\sqrt{\\nu}$ dilation, and the parabolic compression for the torus.',
+        ingredient: 'Uniqueness before time one inside the class, boundedness of continuous functions on compact sets, the viscosity dilation, and the parabolic compression for the torus.',
         remaining: 'Nothing within the formal statements. What remains is interpretive: forced versus unforced, and the meaning of the solution classes (chapters 4 and 5).',
       },
       verify: {

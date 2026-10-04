@@ -11,6 +11,37 @@
 // deliberately exaggerated for visibility (the Lean's SmallParameters has h ≤ 1/1000). The flow pattern is schematic.
 import { theme, labelPill, fmt } from '../scene-runtime.js';
 
+/** Slider format for a decade slider: prints 1 at the start instead of 10^−0.00. */
+export const fmtPow10 = (v) => (v < 0.005 ? '1' : `10^−${v.toFixed(2)}`);
+/** The first candidate string that fits in maxW (plus pad) at the given font; the last candidate otherwise. */
+export function fitText(ctx, candidates, maxW, font, pad = 0) {
+  ctx.save(); if (font) ctx.font = font;
+  let pick = candidates[candidates.length - 1];
+  for (const s of candidates) if (ctx.measureText(s).width + pad <= maxW) { pick = s; break; }
+  ctx.restore();
+  return pick;
+}
+const TITLE_PHYS = ['Physical coordinates (r, z)', 'Physical (r, z)'];
+const TITLE_SIM = ['Similarity plane (X, η): frozen', 'Similarity (X, η): frozen', '(X, η): frozen'];
+const ARROWS_NOTE = ['arrows: swirl + meridional stream, schematic', 'arrows: schematic'];
+const LEGEND_LONG = [['core: base only, blowup here', 'core'], ['active annulus: all corrections', 'annulus'], ['exterior: base only', 'exterior']];
+const LEGEND_SHORT = [['core', 'core'], ['active annulus', 'annulus'], ['exterior', 'exterior']];
+/** One legend row for the three regions, with the band colours; falls back to short labels when the row would not fit. */
+function legendRow(ctx, th, x, y, maxW) {
+  ctx.save(); ctx.font = `10.5px ${th.sans}`; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  const width = (items) => items.reduce((s, [t]) => s + 28 + ctx.measureText(t).width, 0);
+  const items = width(LEGEND_LONG) <= maxW ? LEGEND_LONG : LEGEND_SHORT;
+  let cx = x;
+  for (const [text, kind] of items) {
+    ctx.fillStyle = kind === 'core' ? hexA(th.accent, 0.28) : kind === 'annulus' ? hexA(th.warn, 0.22) : th.sunken;
+    ctx.fillRect(cx, y - 5, 10, 10);
+    ctx.strokeStyle = kind === 'core' ? th.accent : kind === 'annulus' ? th.warn : th.lineStrong; ctx.lineWidth = 1; ctx.strokeRect(cx + 0.5, y - 4.5, 9, 9);
+    ctx.fillStyle = th.muted; ctx.fillText(text, cx + 14, y);
+    cx += 28 + ctx.measureText(text).width;
+  }
+  ctx.restore();
+}
+
 /** Solve q − z² q^{2h} = τ for the unique q > 0 (bisection; q ≥ τ always). */
 function solveQ(tau, z, h) {
   const z2 = z * z, a = 2 * h;
@@ -38,10 +69,10 @@ export default {
       { key: 'L', label: 'Axial scale on z = 0', unit: '(1−t)^(1/2−h)' },
       { key: 'asp', label: 'Width / length', unit: '(1−t)^h → 0' },
     ]);
-    const sT = ui.slider({ label: 'Time to blowup, 1 − t', min: 0, max: 3, step: 0.01, value: logS, format: (v) => `10^−${v.toFixed(2)}`, onChange: (v) => { logS = v; } });
-    ui.slider({ label: 'Exponent h (exaggerated; Lean: 0 < h ≤ 1/1000)', min: 0.001, max: 0.2, step: 0.001, value: h, format: (v) => v.toFixed(3), onChange: (v) => { h = v; trail.length = 0; } });
-    ui.slider({ label: 'Core edge X_L (illustrative; Lean: 4/scale)', min: 0.1, max: 2, step: 0.05, value: XL, onChange: (v) => { XL = Math.min(v, XR - 0.1); } });
-    ui.slider({ label: 'Annulus edge X_R (illustrative; Lean: radius·e^tailEnd)', min: 1, max: 8, step: 0.1, value: XR, onChange: (v) => { XR = Math.max(v, XL + 0.1); } });
+    const sT = ui.slider({ label: 'Time to blowup, 1 − t', min: 0, max: 3, step: 0.01, value: logS, format: fmtPow10, onChange: (v) => { logS = v; } });
+    ui.slider({ label: 'Exponent h', min: 0.001, max: 0.2, step: 0.001, value: h, format: (v) => v.toFixed(3), hint: 'Exaggerated for visibility; the Lean requires 0 < h ≤ 1/1000.', onChange: (v) => { h = v; trail.length = 0; } });
+    ui.slider({ label: 'Core edge X_L', min: 0.1, max: 2, step: 0.05, value: XL, hint: 'Illustrative band edge: it only moves the drawn boundary and the waist readout. The Lean\u2019s activeLeft (4/scale) is abstract.', onChange: (v) => { XL = Math.min(v, XR - 0.1); } });
+    ui.slider({ label: 'Annulus edge X_R', min: 1, max: 8, step: 0.1, value: XR, hint: 'Illustrative band edge: it only moves the drawn boundary. The Lean\u2019s activeRight (radius·e^tailEnd) is abstract.', onChange: (v) => { XR = Math.max(v, XL + 0.1); } });
     ui.toggle({ label: 'Zoom the physical panel with the collapse (r ∝ √(1−t), z ∝ (1−t)^(1/2−h))', value: false, onChange: (v) => { zoom = v; } });
     ui.toggle({ label: 'Play: approach t = 1', value: false, onChange: (v) => { playing = v; if (v && logS >= 2.99) logS = 0; } });
     ui.note('<b>Formula-derived.</b> $q$ solves $q - z^2 q^{2h} = 1-t$; $X = r^2/(2q)$, $\\eta = z/q^{(1-2h)/2}$; the axis speed is $j\\,(1-t)^{-(1/2+h)}$; the three regions are $X \\lt X_L$ (core), $X_L \\le X \\le X_R$ (active annulus), $X \\gt X_R$ (exterior: only the base remains; the pure heat identity holds beyond $X_{\\mathrm{ext}} \\ge X_R + 1$, not drawn). The slider $h$ is exaggerated for visibility and $X_L, X_R, j$ are abstract in the Lean. The swirl and meridional arrows are schematic.');
@@ -61,7 +92,7 @@ export default {
       /* ---------- left: physical half-plane (r, z) ---------- */
       const Rmax0 = 2.4, Zmax0 = 1.1;
       const Rmax = zoom ? Rmax0 * Math.sqrt(tau) * 1.0 : Rmax0, Zmax = zoom ? Zmax0 * Math.pow(tau, D) : Zmax0;
-      const px = { x: 44, y: 26, w: leftW - 54, h: hgt - 52 };
+      const px = { x: 44, y: 38, w: leftW - 54, h: hgt - 64 };
       const RX = (r) => px.x + (r / Rmax) * px.w, ZY = (z) => px.y + px.h / 2 - (z / Zmax) * (px.h / 2);
       for (let i = 0; i < NZ; i++) { const z = -Zmax + (2 * Zmax * i) / (NZ - 1); zs[i] = z; qz[i] = solveQ(tau, z, h); }
       ctx.save(); ctx.beginPath(); ctx.rect(px.x, px.y, px.w, px.h); ctx.clip();
@@ -100,15 +131,14 @@ export default {
       ctx.fillStyle = th.muted; ctx.font = `11px ${th.sans}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       ctx.fillText(zoom ? `r  (0 … ${Rmax.toExponential(1)})` : 'r (distance from the axis)', px.x + px.w / 2, px.y + px.h + 6);
       ctx.save(); ctx.translate(12, px.y + px.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(zoom ? `z  (±${Zmax.toExponential(1)})` : 'z (along the axis)', 0, 0); ctx.restore();
-      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.fillText('Physical coordinates (r, z)', px.x, 6);
-      labelPill(ctx, `t = ${t.toFixed(3)}   q(z=0) = 1 − t = ${tau.toExponential(2)}`, px.x + 4, px.y + 14, { color: th.fg, size: 10.5 });
-      labelPill(ctx, 'core (X < X_L)', px.x + px.w - 6, px.y + 14, { color: th.accent, size: 10, align: 'right' });
-      labelPill(ctx, 'active annulus (X_L ≤ X ≤ X_R)', px.x + px.w - 6, px.y + 32, { color: th.warn, size: 10, align: 'right' });
-      labelPill(ctx, 'exterior (X > X_R): base only; pure heat beyond X_ext', px.x + px.w - 6, px.y + 50, { color: th.muted, size: 10, align: 'right' });
-      labelPill(ctx, 'arrows: swirl + meridional stream, schematic', px.x + 4, px.y + px.h - 12, { color: th.muted, size: 9.5 });
+      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.fillText(fitText(ctx, TITLE_PHYS, px.w + 10, `600 12px ${th.sans}`), px.x, 6);
+      legendRow(ctx, th, px.x, 24, w - px.x - 8); // region colours, shared by both panels
+      // only the time readout sits inside the panel; it is shortened when the panel is narrow
+      labelPill(ctx, fitText(ctx, [`t = ${t.toFixed(3)}   q(z=0) = 1 − t = ${tau.toExponential(2)}`, `t = ${t.toFixed(3)}`], px.w - 8, `600 10.5px ${th.sans}`, 12), px.x + 4, px.y + 14, { color: th.fg, size: 10.5 });
+      labelPill(ctx, fitText(ctx, ARROWS_NOTE, px.w - 8, `600 9.5px ${th.sans}`, 12), px.x + 4, px.y + px.h - 12, { color: th.muted, size: 9.5 });
       /* ---------- right: similarity plane (X, η) — frozen in time ---------- */
       const Xmax = XR * 1.35;
-      const sx = { x: rightX + 40, y: 26, w: rightW - 50, h: hgt - 52 };
+      const sx = { x: rightX + 40, y: 38, w: rightW - 50, h: hgt - 64 };
       const SX = (X) => sx.x + (X / Xmax) * sx.w, SY = (e) => sx.y + sx.h / 2 - e * (sx.h / 2) * 0.94;
       ctx.fillStyle = th.sunken; ctx.fillRect(sx.x, sx.y, sx.w, sx.h);
       ctx.fillStyle = hexA(th.warn, 0.22); ctx.fillRect(SX(XL), SY(1), SX(XR) - SX(XL), SY(-1) - SY(1));
@@ -125,15 +155,12 @@ export default {
       ctx.fillStyle = th.numeric; ctx.beginPath(); ctx.arc(Math.min(SX(XP), sx.x + sx.w), SY(etaP), 4, 0, Math.PI * 2); ctx.fill();
       labelPill(ctx, `P: X = ${fmt.num(XP)}  η = ${etaP.toFixed(3)}`, Math.min(SX(XP), sx.x + sx.w - 150) + 6, SY(etaP) + (etaP < -0.6 ? -12 : 12), { color: th.numeric, size: 10 });
       ctx.strokeStyle = th.lineStrong; ctx.strokeRect(sx.x + 0.5, sx.y + 0.5, sx.w - 1, sx.h - 1);
-      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Similarity plane (X, η): frozen', sx.x, 6);
+      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(fitText(ctx, TITLE_SIM, w - sx.x - 4, `600 12px ${th.sans}`), sx.x, 6);
       ctx.fillStyle = th.muted; ctx.font = `11px ${th.sans}`; ctx.textAlign = 'center'; ctx.fillText('X = r² / (2q)', sx.x + sx.w / 2, sx.y + sx.h + 6);
       ctx.save(); ctx.translate(rightX + 10, sx.y + sx.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('η = z / q^(1/2−h)', 0, 0); ctx.restore();
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillStyle = th.faint; ctx.font = `10px ${th.sans}`;
       ctx.fillText('+1', sx.x - 4, SY(1)); ctx.fillText('−1', sx.x - 4, SY(-1)); ctx.fillText('0', sx.x - 4, SY(0));
       ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText('X_L', SX(XL), sx.y + sx.h + 2); ctx.fillText('X_R', SX(XR), sx.y + sx.h + 2);
-      labelPill(ctx, 'core: base only, blowup here', SX(0) + 4, sx.y + 14, { color: th.accent, size: 10 });
-      labelPill(ctx, 'annulus: all corrections', SX(XL) + 4, sx.y + 34, { color: th.warn, size: 10 });
-      labelPill(ctx, 'exterior: base only', SX(XR) + 4, sx.y + 14, { color: th.muted, size: 10 });
     };
     ui.loop((dt) => {
       if (playing) { logS = Math.min(3, logS + dt * 0.45); sT.set(logS, false); if (logS >= 3) playing = false; }

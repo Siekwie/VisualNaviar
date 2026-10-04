@@ -6,7 +6,29 @@
 // normalized signed columns are (−a, −b) and (−a, b) with positive scales; a target (−m, t) lies strictly between them iff |a t| < b m.
 // Solving  s₋(−a,−b) + s₊(−a,b) = (−m, t)  gives  s₊ = (m/a + t/b)/2,  s₋ = (m/a − t/b)/2, the squared wave amplitudes.
 import { lineChart, theme, labelPill, fmt } from '../scene-runtime.js';
-import { hexA } from './similarity-zoom.js';
+import { hexA, fitText } from './similarity-zoom.js';
+
+const TITLE_WAVE = ['Wave, its square, and the slow mean', 'Wave, square, slow mean', 'Wave and mean'];
+const TITLE_CONE = ['Bracketing by two signed slots', 'Bracketing (two slots)', 'Bracketing'];
+const LEGEND = [
+  { label: 'wave a(x) cos κΦ', short: 'wave', width: 1.2 },
+  { label: '(a cos κΦ)²', short: 'square', width: 1.2 },
+  { label: 'mean a²/2 = target R(x)', short: 'mean = target', width: 3 },
+  { label: '25 × ∫ leftover  (∝ 1/κ)', short: '25 × ∫ leftover', width: 2, dash: [5, 3] },
+];
+const LEG_H = 34; // the legend is drawn in a strip below the plot, so it never covers the curves
+/** Two-column legend strip; uses the short labels when a row would not fit in maxW. */
+function legendStrip(ctx, th, colors, x, y, maxW) {
+  ctx.save(); ctx.font = `11px ${th.sans}`; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  const colW = maxW / 2;
+  const useShort = LEGEND.some((it) => ctx.measureText(it.label).width + 24 > colW);
+  LEGEND.forEach((it, i) => {
+    const lx = x + (i % 2) * colW, ly = y + Math.floor(i / 2) * 15;
+    ctx.strokeStyle = colors[i]; ctx.lineWidth = it.width; ctx.setLineDash(it.dash || []); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 16, ly); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = th.fg; ctx.fillText(useShort ? it.short : it.label, lx + 21, ly);
+  });
+  ctx.restore();
+}
 
 export default {
   id: 'oscillation-mean', label: 'formula-derived',
@@ -53,15 +75,17 @@ export default {
       const leftW = Math.floor(w * 0.58);
       const pts = (arr, step = 1) => { const out = []; for (let i = 0; i <= N; i += step) out.push([xs[i], arr[i]]); return out; };
       const ymax = Math.max(1.3, 2.2 * T);
-      lineChart(ctx, { x: 0, y: 4, w: leftW - 6, h: h - 8 }, {
-        title: 'Wave, its square, and the slow mean', xLabel: 'x (Φ = 2πx)', yLabel: 'amplitude', xDomain: [0, 1], yDomain: [-ymax * 1.25, ymax], legend: 'bottom-right',
+      const colors = [hexA(th.accent, 0.55), hexA(th.warn, 0.55), th.ok, th.bad];
+      lineChart(ctx, { x: 0, y: 4, w: leftW - 6, h: h - 8 - LEG_H }, {
+        title: fitText(ctx, TITLE_WAVE, leftW - 6 - 56, `600 12px ${th.sans}`), xLabel: 'x (Φ = 2πx)', yLabel: 'amplitude', xDomain: [0, 1], yDomain: [-ymax, ymax],
         series: [
-          { pts: pts(wave), color: hexA(th.accent, 0.55), label: 'wave a(x) cos κΦ', width: 1.2 },
-          { pts: pts(sq), color: hexA(th.warn, 0.55), label: '(a cos κΦ)²', width: 1.2 },
-          { pts: pts(mean, 6), color: th.ok, label: 'mean a²/2 = target R(x)', width: 3 },
-          { pts: pts(prim, 3).map(([x, y]) => [x, 25 * y]), color: th.bad, label: '25 × ∫ leftover  (∝ 1/κ)', width: 2, dash: [5, 3] },
+          { pts: pts(wave), color: colors[0], width: 1.2 },
+          { pts: pts(sq), color: colors[1], width: 1.2 },
+          { pts: pts(mean, 6), color: colors[2], width: 3 },
+          { pts: pts(prim, 3).map(([x, y]) => [x, 25 * y]), color: colors[3], width: 2, dash: [5, 3] },
         ],
       });
+      legendStrip(ctx, th, colors, 12, h - LEG_H + 6, leftW - 18);
       /* ---------- right: the cone / bracketing panel ---------- */
       const cx0 = leftW + 6, cw = w - cx0 - 6, ch = h - 8, cy0 = 4;
       ctx.fillStyle = th.sunken; ctx.fillRect(cx0, cy0, cw, ch);
@@ -79,9 +103,10 @@ export default {
       if (ok) { const [qx, qy] = PX(-a * sMinus, -b * sMinus); ctx.strokeStyle = th.faint; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(qx, qy); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]); }
       arrow(ctx, ox, oy, tx, ty, ok ? th.ok : th.bad, 2.5);
       labelPill(ctx, `target (−m, t) = (−1, ${tgt.toFixed(2)})`, tx - 6, ty + (tgt > 0 ? 14 : -14), { color: ok ? th.ok : th.bad, align: 'right', size: 10 });
-      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Bracketing by two signed slots', cx0 + 8, cy0 + 6);
-      labelPill(ctx, ok ? `|a t| = ${Math.abs(tgt).toFixed(2)} < b m = ${b.toFixed(2)}: inside the cone` : `|a t| = ${Math.abs(tgt).toFixed(2)} ≥ b m = ${b.toFixed(2)}: outside`, cx0 + 8, cy0 + 28, { color: ok ? th.ok : th.bad, size: 10.5 });
-      labelPill(ctx, 'shaded: {s₋(−a,−b) + s₊(−a,b), s± > 0}', cx0 + 8, cy0 + ch - 14, { color: th.muted, size: 9.5 });
+      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(fitText(ctx, TITLE_CONE, cw - 16, `600 12px ${th.sans}`), cx0 + 8, cy0 + 6);
+      const condShort = `|a t| = ${Math.abs(tgt).toFixed(2)} ${ok ? '<' : '≥'} b m = ${b.toFixed(2)}`;
+      labelPill(ctx, fitText(ctx, [ok ? `${condShort}: inside the cone` : `${condShort}: outside`, condShort], cw - 16, `600 10.5px ${th.sans}`, 12), cx0 + 8, cy0 + 28, { color: ok ? th.ok : th.bad, size: 10.5 });
+      labelPill(ctx, fitText(ctx, ['shaded: {s₋(−a,−b) + s₊(−a,b), s± > 0}', 'shaded: positive combinations'], cw - 16, `600 9.5px ${th.sans}`, 12), cx0 + 8, cy0 + ch - 14, { color: th.muted, size: 9.5 });
     };
     ui.loop(() => draw());
     c.onResize(() => draw());

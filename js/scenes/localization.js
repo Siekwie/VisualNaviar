@@ -7,7 +7,15 @@
 //   (energy_balance, energy_rate_le, C = uniform bound on ‖f(t)‖²_{L²}), E(0) = 0, hence E(t) ≤ C(e^t − 1) ≤ C·e and kinetic energy ≤ ½ C e.
 import { lineChart, theme, labelPill, fmt } from '../scene-runtime.js';
 import { cutoff } from './error-ledger.js';
-import { hexA } from './similarity-zoom.js';
+import { hexA, fitText } from './similarity-zoom.js';
+
+const TITLE_CUT = ['Cutoff χ on the slice x₁ = 0', 'Cutoff χ, slice x₁ = 0', 'Cutoff χ'];
+const TITLE_CUT_PER = ['Cutoff χ on the slice x₁ = 0, periodized', 'Cutoff χ, periodized', 'Cutoff χ'];
+const TITLE_ENERGY = ['Energy envelope: E′ ≤ E + C, E(0) = 0', 'Energy envelope', 'Energy'];
+const LAB_PLATEAU = ['plateau: χ ≡ 1  (r² < 1/32, |z| < 1/8)', 'plateau: χ ≡ 1'];
+const LAB_K = ['K: r² ≤ 1/16, |z| ≤ 1/4  (χ = 0 outside)', 'K: χ = 0 outside'];
+const LAB_2K = ['2K: force support (whole-space case)', '2K: force support'];
+const LAB_ENV = ['the actual E(t) is below the envelope; not computed', 'actual E(t): below the envelope, not computed', 'E(t) not computed'];
 
 const chi = (x0, x2) => cutoff(16 * x0 * x0) * cutoff(4 * x2);
 
@@ -64,18 +72,19 @@ export default {
       if (periodic) for (const n of [-1, 0, 1]) for (const m of [-1, 0, 1]) { if (n === 0 && m === 0) continue; ctx.strokeStyle = th.line; ctx.strokeRect(PX(-0.5 + n), PY(0.5 + m), S, S); }
       ctx.restore();
       ctx.strokeStyle = th.lineStrong; ctx.strokeRect(px.x + 0.5, px.y + 0.5, px.w - 1, px.h - 1);
-      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(periodic ? 'Cutoff χ on the slice x₁ = 0, periodized' : 'Cutoff χ on the slice x₁ = 0', px.x, 6);
+      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(fitText(ctx, periodic ? TITLE_CUT_PER : TITLE_CUT, leftW - px.x, `600 12px ${th.sans}`), px.x, 6);
       ctx.fillStyle = th.muted; ctx.font = `10.5px ${th.sans}`; ctx.textAlign = 'center'; ctx.fillText('x₀ (radial)', px.x + px.w / 2, px.y + px.h + 6);
       ctx.save(); ctx.translate(12, px.y + px.h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('x₂ (axial)', 0, 0); ctx.restore();
-      labelPill(ctx, 'plateau: χ ≡ 1  (r² < 1/32, |z| < 1/8)', px.x + 6, px.y + 14, { color: th.accent, size: 9.5 });
-      labelPill(ctx, 'K: r² ≤ 1/16, |z| ≤ 1/4  (χ = 0 outside)', px.x + 6, px.y + 32, { color: th.accent, size: 9.5 });
-      labelPill(ctx, '2K: force support (whole-space case)', px.x + 6, px.y + 50, { color: th.warn, size: 9.5 });
-      labelPill(ctx, periodic ? `unit cube |xᵢ| ≤ 1/2; dotted: quarter cube; l = ${l.toFixed(2)}` : `unit cube |xᵢ| ≤ 1/2 (fundamental cube)${l > 1 ? `; compressed by l = ${l.toFixed(2)}` : ''}`, px.x + 6, px.y + px.h - 12, { color: th.muted, size: 9.5 });
+      const pillFont = `600 9.5px ${th.sans}`, pillMax = px.w - 12;
+      labelPill(ctx, fitText(ctx, LAB_PLATEAU, pillMax, pillFont, 12), px.x + 6, px.y + 14, { color: th.accent, size: 9.5 });
+      labelPill(ctx, fitText(ctx, LAB_K, pillMax, pillFont, 12), px.x + 6, px.y + 32, { color: th.accent, size: 9.5 });
+      labelPill(ctx, fitText(ctx, LAB_2K, pillMax, pillFont, 12), px.x + 6, px.y + 50, { color: th.warn, size: 9.5 });
+      labelPill(ctx, fitText(ctx, periodic ? [`unit cube |xᵢ| ≤ 1/2; dotted: quarter cube; l = ${l.toFixed(2)}`, `unit cube; l = ${l.toFixed(2)}`] : [`unit cube |xᵢ| ≤ 1/2 (fundamental cube)${l > 1 ? `; compressed by l = ${l.toFixed(2)}` : ''}`, `unit cube${l > 1 ? `; l = ${l.toFixed(2)}` : ''}`], pillMax, pillFont, 12), px.x + 6, px.y + px.h - 12, { color: th.muted, size: 9.5 });
       /* ---------- right: energy envelope ---------- */
       const pts = (f) => { const out = []; for (let i = 0; i <= 100; i++) { const t = i / 100; out.push([t, f(t)]); } return out; };
       const ymax = C * Math.E * 1.5;
       const ch = lineChart(ctx, { x: leftW + 4, y: 4, w: w - leftW - 8, h: h - 8 }, {
-        title: 'Energy envelope: E′ ≤ E + C, E(0) = 0', xLabel: 't', yLabel: 'E = ‖u(t)‖²_{L²}', xDomain: [0, 1], yDomain: [0, ymax], legend: 'top-left',
+        title: fitText(ctx, TITLE_ENERGY, w - leftW - 8 - 56, `600 12px ${th.sans}`), xLabel: 't', yLabel: 'E = ‖u(t)‖²_{L²}', xDomain: [0, 1], yDomain: [0, ymax], legend: 'top-left',
         series: [
           { pts: pts(() => C * Math.E), color: th.bad, dash: [6, 4], label: 'Lean bound: ‖u‖² ≤ C·e', width: 2 },
           { pts: pts((t) => C * (Math.exp(t) - 1)), color: th.accent, label: 'envelope C(eᵗ − 1)', width: 3 },
@@ -85,7 +94,7 @@ export default {
         marker: tMark,
       });
       ctx.fillStyle = th.accent; ctx.beginPath(); ctx.arc(ch.X(tMark), ch.Y(Et), 4, 0, Math.PI * 2); ctx.fill();
-      labelPill(ctx, 'the actual E(t) is below the envelope; not computed', ch.x0 + ch.w - 6, ch.y0 + ch.h - 14, { color: th.muted, align: 'right', size: 9.5 });
+      labelPill(ctx, fitText(ctx, LAB_ENV, ch.w - 12, `600 9.5px ${th.sans}`, 12), ch.x0 + ch.w - 6, ch.y0 + ch.h - 14, { color: th.muted, align: 'right', size: 9.5 });
     };
     ui.loop(() => draw());
     c.onResize(() => draw());

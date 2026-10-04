@@ -11,6 +11,11 @@
 //   dyadic labels Q n = 2^{−n}, active when q ≤ Q n < 2q       SlotColoring.dyadicQ, ActualPolarCoverage
 // The schedule a_j is abstract in the Lean (chosen by DiagonalScale); the geometric a_j = g^j below is illustrative.
 import { lineChart, theme, labelPill, fmt } from '../scene-runtime.js';
+import { fitText, fmtPow10 } from './similarity-zoom.js';
+
+const TITLE_LEDGER = ['Booked exponent classes vs cycles J', 'Exponent classes vs cycles J', 'Exponent classes'];
+const TITLE_STAGES = ['Stages switched on by χ(a_j q) as q → 0', 'Stages on by χ(a_j q)', 'Stages on'];
+const NOTE_CHI = ['χ ≡ 1 for q ≤ 1/(2a_j): near q = 0 all cutoffs are one', 'χ ≡ 1 for q ≤ 1/(2a_j)'];
 
 const KAPPA = 1e-5;
 /** Mathlib's smoothTransition, used only to draw the shape of the cutoff ramp. */
@@ -32,7 +37,7 @@ export default {
     ]);
     const sJ = ui.slider({ label: 'Completed correction cycles J', min: 0, max: JMAX, step: 1, value: J, format: (v) => String(v), onChange: (v) => { J = v; } });
     ui.slider({ label: 'Exponent h (exaggerated; Lean: h ≤ 1/1000)', min: 0.001, max: 0.2, step: 0.001, value: h, format: (v) => v.toFixed(3), onChange: (v) => { h = v; } });
-    ui.slider({ label: 'Similarity scale q (marker)', min: 0, max: 6, step: 0.01, value: logQ, format: (v) => `10^−${v.toFixed(2)}`, onChange: (v) => { logQ = v; } });
+    ui.slider({ label: 'Similarity scale q (marker)', min: 0, max: 6, step: 0.01, value: logQ, format: fmtPow10, onChange: (v) => { logQ = v; } });
     ui.slider({ label: 'Schedule growth a_{j+1} / a_j (illustrative; Lean: ≥ 2)', min: 2, max: 6, step: 0.5, value: g, format: (v) => v.toFixed(1), onChange: (v) => { g = v; } });
     ui.note('<b>Formula-derived from the Lean exponent ledger; no residual is computed here.</b> After $J$ cycles the booked classes are $B_J = \\tfrac{7}{10} + \\tfrac{J}{10}$ (waves) and $C_J = \\tfrac65 + \\tfrac{J}{10}$ (means); each wave step gains $\\tfrac25$ (particular) or $\\tfrac25 - \\kappa$ (signed), $\\kappa = 10^{-5}$, more than the booked $\\tfrac1{10}$. In physical units the residual near the singular point improves by $q^{hJ/10}$. Stages are switched on by $\\chi(a_j q)$, with $\\chi \\equiv 1$ for $|x| \\le \\tfrac12$ and $\\chi \\equiv 0$ for $|x| \\ge 1$; the slow base weights stage $j$ by $q^{2jh}$. The schedule $a_j = g^j$ is illustrative.');
 
@@ -54,7 +59,7 @@ export default {
       /* ---------- left: the ledger versus J ---------- */
       const pts = (f) => { const out = []; for (let j = 0; j <= JMAX; j++) out.push([j, f(j)]); return out; };
       const ch = lineChart(ctx, { x: 0, y: 4, w: leftW - 6, h: H - 8 }, {
-        title: 'Booked exponent classes vs cycles J', xLabel: 'cycles J', yLabel: 'exponent', xDomain: [0, JMAX], yDomain: [0, 4.4], legend: 'top-left',
+        title: fitText(ctx, TITLE_LEDGER, leftW - 6 - 56, `600 12px ${th.sans}`), xLabel: 'cycles J', yLabel: 'exponent', xDomain: [0, JMAX], yDomain: [0, 4.4], legend: 'top-left',
         series: [
           { pts: pts((j) => 1.2 + j / 10), color: th.warn, label: 'mean class C_J = 6/5 + J/10', width: 2.5 },
           { pts: pts((j) => 0.7 + j / 10), color: th.accent, label: 'wave class B_J = 7/10 + J/10', width: 2.5 },
@@ -69,7 +74,7 @@ export default {
       /* ---------- right: stages switched on along q ---------- */
       const rx = leftW + 50, rw = w - rx - 14, top = 46, rowH = Math.min(24, (H - 130) / ROWS), bot = top + ROWS * rowH;
       const LQ = (lq) => rx + (lq / 6) * rw; // lq = −log10 q ∈ [0, 6]
-      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('Stages switched on by χ(a_j q) as q → 0', rx, 6);
+      ctx.fillStyle = th.fg; ctx.font = `600 12px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(fitText(ctx, TITLE_STAGES, w - rx - 4, `600 12px ${th.sans}`), rx, 6);
       ctx.strokeStyle = th.line; ctx.lineWidth = 1;
       for (let k = 0; k <= 6; k++) { ctx.beginPath(); ctx.moveTo(LQ(k), top); ctx.lineTo(LQ(k), bot + 34); ctx.stroke(); ctx.fillStyle = th.faint; ctx.font = `10.5px ${th.sans}`; ctx.textAlign = 'center'; ctx.fillText(k === 0 ? 'q = 1' : `10⁻${k}`, LQ(k), bot + 36); }
       for (let j = 0; j < ROWS; j++) {
@@ -86,7 +91,13 @@ export default {
           ctx.globalAlpha = 1;
         }
         if (lqOn < 6) { ctx.fillStyle = col; ctx.globalAlpha = 0.9; ctx.fillRect(LQ(lqOn), y + 4, LQ(6) - LQ(lqOn), rowH - 8); ctx.globalAlpha = 1; }
-        if (isOn) { const wgt = Math.pow(q, 2 * j * h); labelPill(ctx, j === 0 ? 'weight 1 (slow base: f₀ uncut)' : `q^${(2 * j * h).toFixed(3)} = ${fmt.num(wgt)}`, LQ(6) - 4, y + rowH / 2, { color: th.fg, align: 'right', size: 9.5 }); }
+        if (isOn) {
+          const wgt = Math.pow(q, 2 * j * h), txt = j === 0 ? 'weight 1 (slow base: f₀ uncut)' : `q^${(2 * j * h).toFixed(3)} = ${fmt.num(wgt)}`;
+          // keep the weight pill clear of the dashed q-marker: slide it to the left of the marker when the two would overlap
+          ctx.font = `600 9.5px ${th.sans}`; const pw = ctx.measureText(txt).width + 12, mx = LQ(logQ);
+          let right = LQ(6) - 4; if (mx > right - pw - 6 && mx < right + 6) right = Math.max(rx + pw, mx - 8);
+          labelPill(ctx, txt, right, y + rowH / 2, { color: th.fg, align: 'right', size: 9.5 });
+        }
       }
       // dyadic labels row
       const yD = bot + 6;
@@ -97,8 +108,8 @@ export default {
       ctx.strokeStyle = th.bad; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(LQ(logQ), top - 4); ctx.lineTo(LQ(logQ), bot + 24); ctx.stroke(); ctx.setLineDash([]);
       labelPill(ctx, `q = ${q.toExponential(2)}: ${active} stage${active === 1 ? '' : 's'} on`, LQ(logQ) + (logQ > 3.6 ? -6 : 6), top - 12, { color: th.bad, align: logQ > 3.6 ? 'right' : 'left', size: 10 });
       ctx.fillStyle = th.muted; ctx.font = `10.5px ${th.sans}`; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-      ctx.fillText(`a_j = ${g}^j illustrative (Lean: 2a_j ≤ a_{j+1}, a_j → ∞)`, rx - 30, bot + 52);
-      ctx.fillText('χ ≡ 1 for q ≤ 1/(2a_j): near q = 0 all cutoffs are one', rx - 30, bot + 66);
+      ctx.fillText(fitText(ctx, [`a_j = ${g}^j illustrative (Lean: 2a_j ≤ a_{j+1}, a_j → ∞)`, `a_j = ${g}^j illustrative (Lean: 2a_j ≤ a_{j+1})`, `a_j = ${g}^j illustrative`], w - (rx - 30) - 4, `10.5px ${th.sans}`), rx - 30, bot + 52);
+      ctx.fillText(fitText(ctx, NOTE_CHI, w - (rx - 30) - 4, `10.5px ${th.sans}`), rx - 30, bot + 66);
     };
     ui.loop(() => draw());
     c.onResize(() => draw());
