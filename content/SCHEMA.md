@@ -59,7 +59,10 @@ export default {
     statements: [ { title: 'Precise statement', html: '…' } ],
     paper:  [ { src: 'ns-paper', where: 'Theorem 1.1', note: '…' } ],
     lean:   [ { decl: 'NavierStokes.Comparator.navier_stokes_breakdown_R3',
-                file: 'NavierStokes/ComparatorSolution.lean', line: 17, note: '…' } ],
+                file: 'NavierStokes/ComparatorSolution.lean', line: 17, note: '…' },
+              // a module docstring or a whole file: set module: true (only file + line range are checked)
+              { decl: 'NavierStokes/ProblemStatement.lean (module docstring)', module: true,
+                file: 'NavierStokes/ProblemStatement.lean', line: 4, note: '…' } ],
     context:[ { src: 'press-quanta', note: '…' } ],        // non-mathematical sources
     limits: [ 'What this scene does NOT show or prove …' ],
   },

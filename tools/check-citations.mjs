@@ -41,12 +41,23 @@ for (const ch of chapters) {
       checks++;
       const f = path.join(clone, l.file); const ls = lines(f);
       if (!ls) { bad(where, `missing Lean file ${l.file}`); continue; }
+      // module-level citations (a file or its module docstring): only the file and line range are checked
+      if (l.module === true || /\.lean$|module docstring|\(file\)/i.test(String(l.decl))) {
+        if (l.line && l.line > ls.length) bad(where, `${l.file}:${l.line} is past the end of the file (${ls.length} lines)`);
+        continue;
+      }
       const name = String(l.decl).replace(/\s*\(.*$/, '').split('.').pop().split(' ')[0];
-      const names = String(l.decl).replace(/\s*\(.*$/, '').split(/\s*\/\s*/).map((d) => d.split('.').pop());
+      const names = String(l.decl).replace(/\s*\(.*$/, '').split(/\s*\/\s*/).map((d) => d.split('.').pop().trim());
       if (l.line) {
         const lo = Math.max(0, l.line - 5), hi = Math.min(ls.length, l.line + 4);
         const win = ls.slice(lo, hi).join('\n');
-        if (!names.some((n) => win.includes(n))) bad(where, `${l.file}:${l.line} does not mention "${name}" nearby (line reads: ${(ls[l.line - 1] || '').trim().slice(0, 70)})`);
+        let ok = names.some((n) => win.includes(n));
+        if (!ok) { // the line may sit inside the body of the cited declaration: look back for its header
+          for (let i = l.line - 1; i >= Math.max(0, l.line - 80) && !ok; i--) {
+            if (/^(@\[[^\]]*\]\s*)?(private\s+|protected\s+|noncomputable\s+)*(theorem|lemma|def|structure|abbrev|class|inductive|instance)\s/.test(ls[i])) { ok = names.some((n) => ls[i].includes(n)); break; }
+          }
+        }
+        if (!ok) bad(where, `${l.file}:${l.line} does not mention "${name}" nearby (line reads: ${(ls[l.line - 1] || '').trim().slice(0, 70)})`);
       } else if (!ls.some((x) => names.some((n) => x.includes(n)))) bad(where, `${l.file} does not mention "${name}"`);
     }
   }
