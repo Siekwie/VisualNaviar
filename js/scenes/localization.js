@@ -29,7 +29,7 @@ export default {
     const draw = () => {
       const { ctx, w, h } = c; const th = theme();
       const E1 = C * (Math.E - 1), Et = C * (Math.exp(tMark) - 1);
-      ro.update({ Et: { value: Et, trend: 'up', detail: `envelope C(e^t − 1) at t = ${tMark.toFixed(3)}` }, E1: { value: E1, trend: 'flat', detail: 'the sharp Gronwall value at t → 1' }, lean: { value: C * Math.E, trend: 'flat', detail: 'ScalarEnergyBound.forced_gronwall_uniform' }, ke: { value: 0.5 * C * Math.E, trend: 'flat', detail: 'uniform_finite_energy: ½·C·exp 1' } });
+      ro.update({ Et: { value: Et, trend: 'up', detail: `envelope C(e^t − 1) at t = ${tMark.toFixed(3)}` }, E1: { value: E1, trend: 'flat', detail: 'the sharp Gronwall value at t → 1' }, lean: { value: C * Math.E, trend: 'flat', detail: 'forced_gronwall_uniform' }, ke: { value: 0.5 * C * Math.E, trend: 'flat', detail: 'uniform_finite_energy: ½·C·exp 1' } });
       ctx.clearRect(0, 0, w, h);
       const leftW = Math.floor(w * 0.47);
       /* ---------- left: the cutoff geometry ---------- */

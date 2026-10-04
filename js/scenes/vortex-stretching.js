@@ -69,7 +69,7 @@ export default {
       // right: chart
       lineChart(ctx, { x: leftW + 6, y: 6, w: w - leftW - 10, h: h - 12 }, {
         title: growing ? 'Peak vorticity and core radius versus T − t' : 'Peak vorticity and core radius versus time',
-        xLabel: growing ? 'T − t (log)' : 't', yLabel: 'relative size (log)', xLog: growing, yLog: true, legend: 'top-right',
+        xLabel: growing ? 'T − t (log)' : 't', yLabel: 'relative size (log)', xLog: growing, yLog: true, legend: growing ? 'bottom-right' : 'bottom-left',
         xDomain: growing ? [1e-3, 1] : undefined,
         series: [
           { pts: curve((s) => Gamma / (Math.PI * s.d2)), color: th.bad, label: 'peak vorticity ω_max', width: 3 },
